@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockInventoryDetailMapper">
+
+    <resultMap type="SkStockInventoryDetail" id="SkStockInventoryDetailResult">
+                    <result property="id" column="id"/>
+                    <result property="inventoryNumber" column="inventory_number"/>
+                    <result property="materialId" column="material_id"/>
+                    <result property="materialName" column="material_name"/>
+                    <result property="param" column="param"/>
+                    <result property="stockNum" column="stock_num"/>
+                    <result property="inventoryNum" column="inventory_num"/>
+                    <result property="differencesNum" column="differences_num"/>
+                    <result property="stockAdjustNum" column="stock_adjust_num"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+            </resultMap>
+
+    <sql id="selectSkStockInventoryDetailVo">
+        select id, inventory_number, material_id, material_name, param, stock_num, inventory_num, differences_num, stock_adjust_num, create_by, create_time, update_by, update_time        from sk_stock_inventory_detail
+    </sql>
+
+    <select id="selectSkStockInventoryDetailList" parameterType="SkStockInventoryDetail" resultMap="SkStockInventoryDetailResult">
+        <include refid="selectSkStockInventoryDetailVo"/>
+        <where>
+                                                                                                    <if test="inventoryNumber != null  and inventoryNumber != ''">
+                            and inventory_number = #{inventoryNumber}
+                        </if>
+                                                                                                            <if test="materialId != null  and materialId != ''">
+                            and material_id = #{materialId}
+                        </if>
+                                                                                                            <if test="materialName != null  and materialName != ''">
+                            and material_name like concat('%', #{materialName}, '%')
+                        </if>
+                                                                                                            <if test="param != null  and param != ''">
+                            and param = #{param}
+                        </if>
+                                                                                                            <if test="stockNum != null ">
+                            and stock_num = #{stockNum}
+                        </if>
+                                                                                                            <if test="inventoryNum != null ">
+                            and inventory_num = #{inventoryNum}
+                        </if>
+                                                                                                            <if test="differencesNum != null ">
+                            and differences_num = #{differencesNum}
+                        </if>
+                                                                                                            <if test="stockAdjustNum != null ">
+                            and stock_adjust_num = #{stockAdjustNum}
+                        </if>
+                                                                                                                                                                        </where>
+    </select>
+
+    <select id="selectSkStockInventoryDetailById" parameterType="Long" resultMap="SkStockInventoryDetailResult">
+        <include refid="selectSkStockInventoryDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSkStockInventoryDetail" parameterType="SkStockInventoryDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_inventory_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">inventory_number,
+                    </if>
+                                                                <if test="materialId != null">material_id,
+                    </if>
+                                                                <if test="materialName != null">material_name,
+                    </if>
+                                                                <if test="param != null">param,
+                    </if>
+                                                                <if test="stockNum != null">stock_num,
+                    </if>
+                                                                <if test="inventoryNum != null">inventory_num,
+                    </if>
+                                                                <if test="differencesNum != null">differences_num,
+                    </if>
+                                                                <if test="stockAdjustNum != null">stock_adjust_num,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">#{inventoryNumber},
+                    </if>
+                                                                <if test="materialId != null">#{materialId},
+                    </if>
+                                                                <if test="materialName != null">#{materialName},
+                    </if>
+                                                                <if test="param != null">#{param},
+                    </if>
+                                                                <if test="stockNum != null">#{stockNum},
+                    </if>
+                                                                <if test="inventoryNum != null">#{inventoryNum},
+                    </if>
+                                                                <if test="differencesNum != null">#{differencesNum},
+                    </if>
+                                                                <if test="stockAdjustNum != null">#{stockAdjustNum},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updateSkStockInventoryDetail" parameterType="SkStockInventoryDetail">
+        update sk_stock_inventory_detail
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">inventory_number =
+                        #{inventoryNumber},
+                    </if>
+                                                                <if test="materialId != null">material_id =
+                        #{materialId},
+                    </if>
+                                                                <if test="materialName != null">material_name =
+                        #{materialName},
+                    </if>
+                                                                <if test="param != null">param =
+                        #{param},
+                    </if>
+                                                                <if test="stockNum != null">stock_num =
+                        #{stockNum},
+                    </if>
+                                                                <if test="inventoryNum != null">inventory_num =
+                        #{inventoryNum},
+                    </if>
+                                                                <if test="differencesNum != null">differences_num =
+                        #{differencesNum},
+                    </if>
+                                                                <if test="stockAdjustNum != null">stock_adjust_num =
+                        #{stockAdjustNum},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockInventoryDetailById" parameterType="Long">
+        delete
+        from sk_stock_inventory_detail where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deleteSkStockInventoryDetailByIds" parameterType="String">
+        delete from sk_stock_inventory_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

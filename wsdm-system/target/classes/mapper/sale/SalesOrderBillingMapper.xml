@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderBillingMapper">
+
+    <resultMap type="SalesOrderBilling" id="SalesOrderBillingResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="deliveryNumber" column="delivery_number"/>
+        <result property="gatheringNumber" column="gathering_number"/>
+        <result property="billingNumber" column="billing_number"/>
+        <result property="customer" column="customer"/>
+        <result property="billingTotal" column="billing_total"/>
+        <result property="number" column="number"/>
+        <result property="remark" column="remark"/>
+        <result property="billingStatus" column="billing_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="gatheringAmount" column="gathering_amount"/>
+        <result property="customerName" column="customerName"/>
+        <result property="approveName" column="approveName"/>
+        <result property="billingStatusName" column="billingStatusName"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderBillingVo">
+        SELECT
+            sob.id,
+            sob.billing_number,
+            sob.gathering_number,
+            sob.delivery_number,
+            sob.sales_number,
+            sod.delivery_date,
+            sog.gathering_amount,
+            sob.customer,
+            concat( sc.customer_number, '.', sc.customer_name ) AS customerName,
+            sob.billing_total,
+            sob.`number`,
+            sob.remark,
+            sob.billing_status,
+            sdd.dict_label AS billingStatusName,
+            u1.nick_name AS create_by,
+            sob.create_time,
+            sob.approve,
+            u2.nick_name AS approveName,
+            sob.approve_time
+        FROM
+            sales_order_billing sob
+        LEFT JOIN sales_order_gathering sog on sog.gathering_number = sob.gathering_number
+        LEFT JOIN sales_order_delivery sod on sod.delivery_number = sob.delivery_number
+        left join sys_user u1 on u1.user_name = sob.create_by
+        left join sys_user u2 on u2.user_name = sob.approve
+        Left join sales_order_customer sc on sc.customer_number = sob.customer
+        left join sys_dict_data sdd on sdd.dict_value = sob.billing_status and sdd.dict_type = 'dict_sale_order_status'
+    </sql>
+
+    <select id="selectSalesOrderBillingList" parameterType="SalesOrderBillingQuery" resultMap="SalesOrderBillingResult">
+        <include refid="selectSalesOrderBillingVo"/>
+        <where>
+            <if test="billingNumber != null  and billingNumber != ''">
+                and sob.billing_number like concat('%', #{billingNumber}, '%')
+            </if>
+            <if test="gatheringNumber != null  and gatheringNumber != ''">
+                and sob.gathering_number like concat('%', #{gatheringNumber}, '%')
+            </if>
+            <if test="deliveryNumber != null  and deliveryNumber != ''">
+                and sob.delivery_number like concat('%', #{deliveryNumber}, '%')
+            </if>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sob.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and sob.customer = #{customer}
+            </if>
+            <if test="number != null  and number != ''">
+                and sob.number like concat('%', #{number}, '%')
+            </if>
+            <if test="billingStatus != null  and billingStatus != ''">
+                and sob.billing_status = #{billingStatus}
+            </if>
+            <if test="billingDateStart != null  and billingDateEnd != null">
+                and sob.create_time between #{billingDateStart} and #{billingDateEnd}
+            </if>
+        </where>
+        order by sob.create_time DESC, sob.update_time DESC
+    </select>
+
+    <select id="selectSalesOrderBillingById" parameterType="Long" resultMap="SalesOrderBillingResult">
+        <include refid="selectSalesOrderBillingVo"/>
+        where sob.id = #{id}
+    </select>
+
+    <select id="getMaxBillingCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(billing_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_billing
+        WHERE billing_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <insert id="insertSalesOrderBilling" parameterType="SalesOrderBilling" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_billing
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="billingNumber != null">billing_number,
+            </if>
+            <if test="gatheringNumber != null">gathering_number,
+            </if>
+            <if test="deliveryNumber != null">delivery_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customer != null">customer,
+            </if>
+            <if test="billingTotal != null">billing_total,
+            </if>
+            <if test="number != null">number,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="billingStatus != null">billing_status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="billingNumber != null">#{billingNumber},
+            </if>
+            <if test="gatheringNumber != null">#{gatheringNumber},
+            </if>
+            <if test="deliveryNumber != null">#{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="billingTotal != null">#{billingTotal},
+            </if>
+            <if test="number != null">#{number},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="billingStatus != null">#{billingStatus},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesOrderBilling" parameterType="SalesOrderBilling">
+        update sales_order_billing
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="billingNumber != null">billing_number =
+                #{billingNumber},
+            </if>
+            <if test="gatheringNumber != null">gathering_number =
+                #{gatheringNumber},
+            </if>
+            <if test="deliveryNumber != null">delivery_number =
+                #{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">sales_number =
+                #{salesNumber},
+            </if>
+            <if test="billingTotal != null">billing_total =
+                #{billingTotal},
+            </if>
+            <if test="number != null">number =
+                #{number},
+            </if>
+            remark = #{remark},
+            <if test="billingStatus != null">billing_status =
+                #{billingStatus},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+            <if test="approve != null">approve =
+                #{approve},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteSalesOrderBillingById" parameterType="Long">
+        update sales_order_billing set billing_status = '-2' where id = {id}
+    </update>
+
+</mapper>

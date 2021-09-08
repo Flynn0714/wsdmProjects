@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockInventoryInfoMapper">
+
+    <resultMap type="SkStockInventoryInfo" id="SkStockInventoryInfoResult">
+                    <result property="id" column="id"/>
+                    <result property="inventoryNumber" column="inventory_number"/>
+                    <result property="stockCode" column="stock_code"/>
+                    <result property="stockName" column="stock_name"/>
+                    <result property="materialType" column="material_type"/>
+                    <result property="remark" column="remark"/>
+                    <result property="status" column="status"/>
+                    <result property="startOperator" column="start_operator"/>
+                    <result property="entryOperator" column="entry_operator"/>
+                    <result property="bookingOperator" column="booking_operator"/>
+                    <result property="startTime" column="start_time"/>
+                    <result property="entryTime" column="entry_time"/>
+                    <result property="bookingTime" column="booking_time"/>
+                    <result property="inventoryDate" column="inventory_date"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+            </resultMap>
+
+    <sql id="selectSkStockInventoryInfoVo">
+        select id, inventory_number, stock_code, stock_name, material_type, remark, status, start_operator, entry_operator, booking_operator, start_time, entry_time, booking_time, inventory_date, create_by, create_time, update_by, update_time        from sk_stock_inventory_info
+    </sql>
+
+    <select id="selectSkStockInventoryInfoList" parameterType="SkStockInventoryInfo" resultMap="SkStockInventoryInfoResult">
+        <include refid="selectSkStockInventoryInfoVo"/>
+        <where>
+                                                                                                    <if test="inventoryNumber != null  and inventoryNumber != ''">
+                            and inventory_number = #{inventoryNumber}
+                        </if>
+                                                                                                            <if test="stockCode != null  and stockCode != ''">
+                            and stock_code = #{stockCode}
+                        </if>
+                                                                                                            <if test="stockName != null  and stockName != ''">
+                            and stock_name like concat('%', #{stockName}, '%')
+                        </if>
+                                                                                                            <if test="materialType != null  and materialType != ''">
+                            and material_type = #{materialType}
+                        </if>
+                                                                                                                                        <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+                                                                                                            <if test="startOperator != null  and startOperator != ''">
+                            and start_operator = #{startOperator}
+                        </if>
+                                                                                                            <if test="entryOperator != null  and entryOperator != ''">
+                            and entry_operator = #{entryOperator}
+                        </if>
+                                                                                                            <if test="bookingOperator != null  and bookingOperator != ''">
+                            and booking_operator = #{bookingOperator}
+                        </if>
+                                                                                                            <if test="startTime != null ">
+                            and start_time = #{startTime}
+                        </if>
+                                                                                                            <if test="entryTime != null ">
+                            and entry_time = #{entryTime}
+                        </if>
+                                                                                                            <if test="bookingTime != null ">
+                            and booking_time = #{bookingTime}
+                        </if>
+                                                                                                            <if test="inventoryDate != null ">
+                            and inventory_date = #{inventoryDate}
+                        </if>
+          <if test="beginTime!=null and beginTime!=''"><![CDATA[AND inventory_date>=#{beginTime}]]></if>
+          <if test="endTime!=null and endTime!=''"><![CDATA[AND inventory_date<=#{endTime}]]></if>
+        </where>
+    </select>
+
+    <select id="selectSkStockInventoryInfoById" parameterType="Long" resultMap="SkStockInventoryInfoResult">
+        <include refid="selectSkStockInventoryInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSkStockInventoryInfo" parameterType="SkStockInventoryInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_inventory_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">inventory_number,
+                    </if>
+                                                                <if test="stockCode != null">stock_code,
+                    </if>
+                                                                <if test="stockName != null">stock_name,
+                    </if>
+                                                                <if test="materialType != null">material_type,
+                    </if>
+                                                                <if test="remark != null">remark,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="startOperator != null">start_operator,
+                    </if>
+                                                                <if test="entryOperator != null">entry_operator,
+                    </if>
+                                                                <if test="bookingOperator != null">booking_operator,
+                    </if>
+                                                                <if test="startTime != null">start_time,
+                    </if>
+                                                                <if test="entryTime != null">entry_time,
+                    </if>
+                                                                <if test="bookingTime != null">booking_time,
+                    </if>
+                                                                <if test="inventoryDate != null">inventory_date,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">#{inventoryNumber},
+                    </if>
+                                                                <if test="stockCode != null">#{stockCode},
+                    </if>
+                                                                <if test="stockName != null">#{stockName},
+                    </if>
+                                                                <if test="materialType != null">#{materialType},
+                    </if>
+                                                                <if test="remark != null">#{remark},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="startOperator != null">#{startOperator},
+                    </if>
+                                                                <if test="entryOperator != null">#{entryOperator},
+                    </if>
+                                                                <if test="bookingOperator != null">#{bookingOperator},
+                    </if>
+                                                                <if test="startTime != null">#{startTime},
+                    </if>
+                                                                <if test="entryTime != null">#{entryTime},
+                    </if>
+                                                                <if test="bookingTime != null">#{bookingTime},
+                    </if>
+                                                                <if test="inventoryDate != null">#{inventoryDate},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updateSkStockInventoryInfo" parameterType="SkStockInventoryInfo">
+        update sk_stock_inventory_info
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="inventoryNumber != null">inventory_number =
+                        #{inventoryNumber},
+                    </if>
+                                                                <if test="stockCode != null">stock_code =
+                        #{stockCode},
+                    </if>
+                                                                <if test="stockName != null">stock_name =
+                        #{stockName},
+                    </if>
+                                                                <if test="materialType != null">material_type =
+                        #{materialType},
+                    </if>
+                                                                <if test="remark != null">remark =
+                        #{remark},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="startOperator != null">start_operator =
+                        #{startOperator},
+                    </if>
+                                                                <if test="entryOperator != null">entry_operator =
+                        #{entryOperator},
+                    </if>
+                                                                <if test="bookingOperator != null">booking_operator =
+                        #{bookingOperator},
+                    </if>
+                                                                <if test="startTime != null">start_time =
+                        #{startTime},
+                    </if>
+                                                                <if test="entryTime != null">entry_time =
+                        #{entryTime},
+                    </if>
+                                                                <if test="bookingTime != null">booking_time =
+                        #{bookingTime},
+                    </if>
+                                                                <if test="inventoryDate != null">inventory_date =
+                        #{inventoryDate},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockInventoryInfoById" parameterType="Long">
+        delete
+        from sk_stock_inventory_info where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deleteSkStockInventoryInfoByIds" parameterType="String">
+        delete from sk_stock_inventory_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+  <select id="getLatestCode" resultType="String">
+    <![CDATA[SELECT inventory_number FROM sk_stock_inventory_info ORDER BY id DESC LIMIT 1]]>
+  </select>
+</mapper>

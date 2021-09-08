@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockBatchLockMapper">
+
+    <resultMap type="SkStockBatchLock" id="SkStockBatchLockResult">
+        <result property="id" column="id"/>
+        <result property="stockCode" column="stock_code"/>
+        <result property="batchCode" column="batch_code"/>
+        <result property="produce" column="produce"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="stockLockNum" column="stock_lock_num"/>
+        <result property="lockNumber" column="lock_number"/>
+        <result property="lockType" column="lock_type"/>
+        <result property="unlockTime" column="unlock_time"/>
+        <result property="lockRemark" column="lock_remark"/>
+        <result property="unlockRemark" column="unlock_remark"/>
+        <result property="isLock" column="is_lock"/>
+        <result property="version" column="version"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSkStockBatchLockVo">
+        select id,
+               stock_code,
+               batch_code,
+               produce,
+               stock_name,
+               produce_name,
+               supplier_code,
+               stock_lock_num,
+               lock_number,
+               lock_type,
+               unlock_time,
+               lock_remark,
+               unlock_remark,
+               is_lock,
+               version,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sk_stock_batch_lock
+    </sql>
+
+    <select id="selectSkStockBatchLockList" parameterType="SkStockBatchLock" resultMap="SkStockBatchLockResult">
+        <include refid="selectSkStockBatchLockVo"/>
+        <where>
+            <if test="stockCode != null  and stockCode != ''">
+                and stock_code = #{stockCode}
+            </if>
+            <if test="batchCode != null  and batchCode != ''">
+                and batch_code = #{batchCode}
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce = #{produce}
+            </if>
+            <if test="name != null  and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and supplier_code = #{supplierCode}
+            </if>
+            <if test="stockLockNum != null ">
+                and stock_lock_num = #{stockLockNum}
+            </if>
+            <if test="lockNumber != null  and lockNumber != ''">
+                and lock_number = #{lockNumber}
+            </if>
+            <if test="lockType != null  and lockType != ''">
+                and lock_type = #{lockType}
+            </if>
+            <if test="unlockTime != null ">
+                and unlock_time = #{unlockTime}
+            </if>
+            <if test="lockRemark != null  and lockRemark != ''">
+                and lock_remark = #{lockRemark}
+            </if>
+            <if test="unlockRemark != null  and unlockRemark != ''">
+                and unlock_remark = #{unlockRemark}
+            </if>
+            <if test="isLock != null  and isLock != ''">
+                and is_lock = #{isLock}
+            </if>
+            <if test="version != null  and version != ''">
+                and version = #{version}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSkStockBatchLockById" parameterType="Long" resultMap="SkStockBatchLockResult">
+        <include refid="selectSkStockBatchLockVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSkStockBatchLock" parameterType="SkStockBatchLock" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_batch_lock
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">
+                stock_code,
+            </if>
+            <if test="batchCode != null">
+                batch_code,
+            </if>
+            <if test="produce != null">
+                produce,
+            </if>
+            <if test="stockName != null">
+                stock_name,
+            </if>
+            <if test="produceName != null">
+                produce_name,
+            </if>
+            <if test="supplierCode != null">
+                supplier_code,
+            </if>
+            <if test="stockLockNum != null">
+                stock_lock_num,
+            </if>
+            <if test="lockNumber != null">
+                lock_number,
+            </if>
+            <if test="lockType != null">
+                lock_type,
+            </if>
+            <if test="unlockTime != null">
+                unlock_time,
+            </if>
+            <if test="lockRemark != null">
+                lock_remark,
+            </if>
+            <if test="unlockRemark != null">
+                unlock_remark,
+            </if>
+            <if test="isLock != null">
+                is_lock,
+            </if>
+            <if test="version != null">
+                version,
+            </if>
+            <if test="createBy != null">
+                create_by,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">
+                #{stockCode},
+            </if>
+            <if test="batchCode != null">
+                #{batchCode},
+            </if>
+            <if test="produce != null">
+                #{produce},
+            </if>
+            <if test="stockName != null">
+                #{stockName},
+            </if>
+            <if test="produceName != null">
+                #{produceName},
+            </if>
+            <if test="supplierCode != null">
+                #{supplierCode},
+            </if>
+            <if test="stockLockNum != null">
+                #{stockLockNum},
+            </if>
+            <if test="lockNumber != null">
+                #{lockNumber},
+            </if>
+            <if test="lockType != null">
+                #{lockType},
+            </if>
+            <if test="unlockTime != null">
+                #{unlockTime},
+            </if>
+            <if test="lockRemark != null">
+                #{lockRemark},
+            </if>
+            <if test="unlockRemark != null">
+                #{unlockRemark},
+            </if>
+            <if test="isLock != null">
+                #{isLock},
+            </if>
+            <if test="version != null">
+                #{version},
+            </if>
+            <if test="createBy != null">
+                #{createBy},
+            </if>
+            <if test="createTime != null">
+                NOW(),
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSkStockBatchLock" parameterType="SkStockBatchLock">
+        update sk_stock_batch_lock
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stockCode != null">
+                stock_code = #{stockCode},
+            </if>
+            <if test="batchCode != null">
+                batch_code = #{batchCode},
+            </if>
+            <if test="produce != null">
+                produce = #{produce},
+            </if>
+            <if test="stockName != null">
+                stock_name = #{stockName},
+            </if>
+            <if test="produceName != null">
+                produce_name = #{produceName},
+            </if>
+            <if test="supplierCode != null">
+                supplier_code = #{supplierCode},
+            </if>
+            <if test="stockLockNum != null">
+                stock_lock_num = #{stockLockNum},
+            </if>
+            <if test="lockNumber != null">
+                lock_number = #{lockNumber},
+            </if>
+            <if test="lockType != null">
+                lock_type = #{lockType},
+            </if>
+            <if test="unlockTime != null">
+                unlock_time = #{unlockTime},
+            </if>
+            <if test="lockRemark != null">
+                lock_remark = #{lockRemark},
+            </if>
+            <if test="unlockRemark != null">
+                unlock_remark = #{unlockRemark},
+            </if>
+            <if test="isLock != null">
+                is_lock = #{isLock},
+            </if>
+            <if test="version != null">
+                version = #{version},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            update_time = NOW()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockBatchLockById" parameterType="Long">
+        delete from sk_stock_batch_lock where id = #{id}
+    </delete>
+
+    <delete id="deleteSkStockBatchLockByIds" parameterType="String">
+        delete from sk_stock_batch_lock where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

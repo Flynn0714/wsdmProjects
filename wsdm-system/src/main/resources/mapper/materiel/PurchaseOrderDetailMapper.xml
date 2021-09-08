@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchaseOrderDetailMapper">
+
+    <resultMap type="PurchaseOrderDetail" id="PurchaseOrderDetailResult">
+        <result property="id" column="id"/>
+        <result property="purchaseNumber" column="purchase_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="materielNumber" column="materiel_number"/>
+        <result property="materielName" column="materiel_name"/>
+        <result property="modelParam" column="model_param"/>
+        <result property="specifications" column="specifications"/>
+        <result property="wlType" column="wl_type"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="purchaseNum" column="purchase_num"/>
+        <result property="subtotalAmount" column="subtotal_amount"/>
+        <result property="receivedNum" column="received_num"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchaseOrderDetailVo">
+        select
+            wpod.id,
+            wpod.purchase_number,
+            wpod.contract_number,
+            wpod.materiel_number,
+            wpod.materiel_name,
+            wpod.model_param,
+            wpod.specifications,
+            wpod.wl_type,
+            wpod.material_quality,
+            wpod.unit_price,
+            wpod.purchase_num,
+            wpod.subtotal_amount,
+            @ss := IFNULL((SELECT sum(receive_num) FROM wl_receive_order_detail WHERE receive_number IN ( SELECT receive_number FROM wl_receive_order_info WHERE purchase_number = wpod.purchase_number AND STATUS = "3" ) and materiel_number=wpod.materiel_number),0.0) AS received_num,
+            CONVERT((wpod.purchase_num - @ss),DECIMAL(12,1)) as receiveNum,
+            wpod.create_by,
+            wpod.create_time,
+            wpod.update_by,
+            wpod.update_time
+        from wl_purchase_order_detail wpod
+    </sql>
+
+    <select id="selectPurchaseOrderDetailList" parameterType="PurchaseOrderDetail"
+            resultMap="PurchaseOrderDetailResult">
+        <include refid="selectPurchaseOrderDetailVo"/>
+        <where>
+            <if test="purchaseNumber != null  and purchaseNumber != ''">
+                and wpod.purchase_number = #{purchaseNumber}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPurchaseOrderDetailById" parameterType="Long" resultMap="PurchaseOrderDetailResult">
+        <include refid="selectPurchaseOrderDetailVo"/>
+        where wpod.id = #{id}
+    </select>
+
+    <select id="selectPurchaseOrderDetailByIds" parameterType="String" resultMap="PurchaseOrderDetailResult">
+        <include refid="selectPurchaseOrderDetailVo"/>
+        where wpod.id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectPurchaseOrderDetailByPurchaseNumber" parameterType="String" resultMap="PurchaseOrderDetailResult">
+        <include refid="selectPurchaseOrderDetailVo"/>
+        where wpod.purchase_number = #{purchaseNumber}
+    </select>
+
+    <insert id="insertPurchaseOrderDetail" parameterType="PurchaseOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_order_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="purchaseNumber != null">purchase_number,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="materielNumber != null">materiel_number,
+            </if>
+            <if test="materielName != null">materiel_name,
+            </if>
+            <if test="modelParam != null">model_param,
+            </if>
+            <if test="specifications != null">specifications,
+            </if>
+            <if test="wlType != null">wl_type,
+            </if>
+            <if test="materialQuality != null">material_quality,
+            </if>
+            <if test="unitPrice != null">unit_price,
+            </if>
+            <if test="purchaseNum != null">purchase_num,
+            </if>
+            <if test="subtotalAmount != null">subtotal_amount,
+            </if>
+            <if test="receivedNum != null">received_num,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="purchaseNumber != null">#{purchaseNumber},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="materielNumber != null">#{materielNumber},
+            </if>
+            <if test="materielName != null">#{materielName},
+            </if>
+            <if test="modelParam != null">#{modelParam},
+            </if>
+            <if test="specifications != null">#{specifications},
+            </if>
+            <if test="wlType != null">#{wlType},
+            </if>
+            <if test="materialQuality != null">#{materialQuality},
+            </if>
+            <if test="unitPrice != null">#{unitPrice},
+            </if>
+            <if test="purchaseNum != null">#{purchaseNum},
+            </if>
+            <if test="subtotalAmount != null">#{subtotalAmount},
+            </if>
+            <if test="receivedNum != null">#{receivedNum},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertPurchaseOrderDetailBatch" parameterType="PurchaseOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_order_detail(
+            purchase_number,
+            contract_number,
+            materiel_number,
+            materiel_name,
+            model_param,
+            specifications,
+            wl_type,
+            material_quality,
+            unit_price,
+            purchase_num,
+            subtotal_amount,
+            create_by,
+            create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+                #{item.purchaseNumber},
+                #{item.contractNumber},
+                #{item.materielNumber},
+                #{item.materielName},
+                #{item.modelParam},
+                #{item.specifications},
+                #{item.wlType},
+                #{item.materialQuality},
+                #{item.unitPrice},
+                #{item.purchaseNum},
+                #{item.subtotalAmount},
+                #{item.createBy},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updatePurchaseOrderDetail" parameterType="PurchaseOrderDetail">
+        update wl_purchase_order_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="purchaseNumber != null">purchase_number =
+                #{purchaseNumber},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePurchaseOrderDetailById" parameterType="Long">
+        delete
+        from wl_purchase_order_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deletePurchaseOrderDetailByPurchaseNumber" parameterType="String">
+        delete
+        from wl_purchase_order_detail
+        where purchase_number = #{purchaseNumber}
+    </delete>
+
+    <delete id="deletePurchaseOrderDetailByIds" parameterType="String">
+        delete from wl_purchase_order_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

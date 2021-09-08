@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderCollectionMapper">
+
+    <resultMap type="SalesOrderCollection" id="SalesOrderCollectionResult">
+        <result property="id" column="id"/>
+        <result property="customer" column="customer"/>
+        <result property="customerName" column="customerName"/>
+        <result property="customerLevel" column="customer_level"/>
+        <result property="linkman" column="linkman"/>
+        <result property="phone" column="phone"/>
+        <result property="salesperson" column="salesperson"/>
+        <result property="transactionTotal" column="transaction_total"/>
+        <result property="gatheringTotal" column="gathering_total"/>
+        <result property="gatheringAmount" column="gathering_amount"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="gatheringDate" column="gathering_date"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderCollectionVo">
+        select id,
+               customer,
+               customer_level,
+               linkman,
+               phone,
+               salesperson,
+               transaction_total,
+               gathering_total,
+               gathering_amount,
+               transaction_date,
+               gathering_date,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sales_order_collection
+    </sql>
+
+    <select id="selectSalesOrderCollectionList" parameterType="SalesOrderCollection"
+            resultMap="SalesOrderCollectionResult">
+        SELECT
+        soc.id,
+        soc.customer,
+        CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+        d.dict_label AS customer_level,
+        soc.linkman,
+        soc.phone,
+        u.nick_name AS salesperson,
+        soc.transaction_total,
+        soc.gathering_total,
+        soc.gathering_amount,
+        soc.transaction_date,
+        soc.gathering_date
+        FROM sales_order_collection soc
+        LEFT JOIN sales_order_customer c ON soc.customer = c.customer_number
+        LEFT JOIN sys_dict_data d ON d.dict_value = soc.customer_level AND d.dict_type = 'dict_customer_level'
+        LEFT JOIN sys_user u ON u.user_name = soc.salesperson
+        <where>
+            <if test="customer != null  and customer != ''">
+                and soc.customer = #{customer}
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+            <if test="salesperson != null  and salesperson != ''">
+                and u.nick_name like concat('%',#{salesperson},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getOrderCollectionByCustomer" parameterType="SalesOrderCollection"
+            resultMap="SalesOrderCollectionResult">
+        <include refid="selectSalesOrderCollectionVo"/> where customer = #{customer}
+    </select>
+
+    <select id="selectSalesOrderCollectionById" parameterType="Long" resultMap="SalesOrderCollectionResult">
+        SELECT
+            soc.id,
+            soc.customer,
+            CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+            d.dict_label AS customer_level,
+            soc.linkman,
+            soc.phone,
+            u.nick_name AS salesperson,
+            soc.transaction_total,
+            soc.gathering_total,
+            soc.gathering_amount,
+            soc.transaction_date,
+            soc.gathering_date
+        FROM sales_order_collection soc
+        LEFT JOIN sales_order_customer c ON soc.customer = c.customer_number
+        LEFT JOIN sys_dict_data d ON d.dict_value = soc.customer_level AND d.dict_type = 'dict_customer_level'
+        LEFT JOIN sys_user u ON u.user_name = soc.salesperson
+        where soc.id = #{id}
+    </select>
+
+    <insert id="insertSalesOrderCollection" parameterType="SalesOrderCollection" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_collection
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customer != null">customer,
+            </if>
+            <if test="customerLevel != null">customer_level,
+            </if>
+            <if test="linkman != null">linkman,
+            </if>
+            <if test="phone != null">phone,
+            </if>
+            <if test="salesperson != null">salesperson,
+            </if>
+            <if test="transactionTotal != null">transaction_total,
+            </if>
+            <if test="gatheringTotal != null">gathering_total,
+            </if>
+            <if test="gatheringAmount != null">gathering_amount,
+            </if>
+            <if test="transactionDate != null">transaction_date,
+            </if>
+            <if test="gatheringDate != null">gathering_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="customerLevel != null">#{customerLevel},
+            </if>
+            <if test="linkman != null">#{linkman},
+            </if>
+            <if test="phone != null">#{phone},
+            </if>
+            <if test="salesperson != null">#{salesperson},
+            </if>
+            <if test="transactionTotal != null">#{transactionTotal},
+            </if>
+            <if test="gatheringTotal != null">#{gatheringTotal},
+            </if>
+            <if test="gatheringAmount != null">#{gatheringAmount},
+            </if>
+            <if test="transactionDate != null">#{transactionDate},
+            </if>
+            <if test="gatheringDate != null">#{gatheringDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesOrderCollection" parameterType="SalesOrderCollection">
+        update sales_order_collection
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customer != null">customer =
+                #{customer},
+            </if>
+            <if test="customerLevel != null">customer_level =
+                #{customerLevel},
+            </if>
+            <if test="linkman != null">linkman =
+                #{linkman},
+            </if>
+            <if test="phone != null">phone =
+                #{phone},
+            </if>
+            <if test="salesperson != null">salesperson =
+                #{salesperson},
+            </if>
+            <if test="transactionTotal != null">transaction_total =
+                #{transactionTotal},
+            </if>
+            <if test="gatheringTotal != null">gathering_total =
+                #{gatheringTotal},
+            </if>
+            <if test="gatheringAmount != null">gathering_amount =
+                #{gatheringAmount},
+            </if>
+            <if test="transactionDate != null">transaction_date =
+                #{transactionDate},
+            </if>
+            <if test="gatheringDate != null">gathering_date =
+                #{gatheringDate},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSalesOrderCollectionById" parameterType="Long">
+        delete
+        from sales_order_collection
+        where id
+            =
+              #{id}
+    </delete>
+
+    <delete id="deleteSalesOrderCollectionByIds" parameterType="String">
+        delete from sales_order_collection where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

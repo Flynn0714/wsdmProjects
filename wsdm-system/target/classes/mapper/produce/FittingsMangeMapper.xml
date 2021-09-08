@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.produce.mapper.FittingsMangeMapper">
+
+    <resultMap type="FittingsMange" id="FittingsMangeResult">
+        <result property="id" column="id"/>
+        <result property="fittingName" column="fitting_name"/>
+        <result property="fittingLabel" column="fittingLabel"/>
+        <result property="fittingNumber" column="fitting_number"/>
+        <result property="fittingModel" column="fitting_model"/>
+        <result property="num" column="num"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectFittingsMangeVo">
+         select pf.id,
+               pf.fitting_name,
+			   sdd.dict_label as fittingLabel,
+               pf.fitting_number,
+               pf.fitting_model,
+               pf.status,
+               pf.create_by,
+               pf.create_time,
+               pf.update_by,
+               pf.update_time
+        from pd_fittings_mange pf
+				left join sys_dict_data sdd on sdd.dict_value = pf.fitting_name and sdd.dict_type = 'dict_fitting'
+    </sql>
+
+    <select id="selectFittingsMangeList" parameterType="FittingsMange" resultMap="FittingsMangeResult">
+        <include refid="selectFittingsMangeVo"/>
+        <where>
+            <if test="fittingName != null  and fittingName != ''">
+                and fitting_name like concat('%', #{fittingName}, '%')
+            </if>
+            <if test="fittingNumber != null  and fittingNumber != ''">
+                and fitting_number like concat('%',#{fittingNumber},'%')
+            </if>
+            <if test="fittingModel != null  and fittingModel != ''">
+                and fitting_model like concat('%', #{fittingModel},'%')
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectFittingsMangeById" parameterType="Long" resultMap="FittingsMangeResult">
+        <include refid="selectFittingsMangeVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getFittingsByProduceNumber" parameterType="String" resultMap="FittingsMangeResult">
+        SELECT
+            f.id, f.fitting_name, f.fitting_number, f.fitting_model, d.num, f.status
+        FROM pd_produce_details d
+        LEFT JOIN pd_fittings_mange f ON d.ref = f.fitting_number
+        WHERE d.`type` = '2' AND d.produce = #{produceNumber}
+    </select>
+
+    <insert id="insertFittingsMange" parameterType="FittingsMange" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_fittings_mange
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fittingName != null">fitting_name,
+            </if>
+            <if test="fittingNumber != null">fitting_number,
+            </if>
+            <if test="fittingModel != null">fitting_model,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fittingName != null">#{fittingName},
+            </if>
+            <if test="fittingNumber != null">#{fittingNumber},
+            </if>
+            <if test="fittingModel != null">#{fittingModel},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertFittingsMangeBatch" parameterType="FittingsMange" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_fittings_mange (fitting_name, fitting_number, fitting_model, status, create_by, create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.fittingName}, #{item.fittingNumber}, #{item.fittingModel}, #{item.status}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateFittingsMange" parameterType="FittingsMange">
+        update pd_fittings_mange
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fittingName != null">
+                fitting_name = #{fittingName},
+            </if>
+            <if test="fittingNumber != null">
+                fitting_number = #{fittingNumber},
+            </if>
+            <if test="fittingModel != null">
+                fitting_model = #{fittingModel},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createBy != null">
+                create_by = #{createBy},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteFittingsMangeById" parameterType="Long">
+        update pd_fittings_mange set status = '1'
+        where id = #{id}
+    </update>
+
+    <update id="deleteFittingsMangeByIds" parameterType="String">
+        update pd_fittings_mange set status = '1'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getFittingInfoByFittingNumber" parameterType="String" resultMap="FittingsMangeResult">
+        <include refid="selectFittingsMangeVo"/>
+        where fitting_number = #{fittingNumber}
+    </select>
+
+    <select id="fittingInfoByListFittingNumber" resultMap="FittingsMangeResult">
+        <include refid="selectFittingsMangeVo"/>
+        where fitting_number in
+        <foreach item="fittingNumber" collection="list" open="(" separator="," close=")">
+            #{fittingNumber}
+        </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.ReceiveOrderDetailMapper">
+
+    <resultMap type="ReceiveOrderDetail" id="ReceiveOrderDetailResult">
+        <result property="id" column="id"/>
+        <result property="itemNo" column="item_no"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="materielNumber" column="materiel_number"/>
+        <result property="materielName" column="materiel_name"/>
+        <result property="modelParam" column="model_param"/>
+        <result property="wlType" column="wl_type"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="purchaseNum" column="purchase_num"/>
+        <result property="receiveNum" column="receive_num"/>
+        <result property="weight" column="weight"/>
+        <result property="valuationWay" column="valuation_way"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="subtotalAmount" column="subtotal_amount"/>
+        <result property="checkType" column="check_type"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="remark" column="remark"/>
+        <result property="qualifiedNum" column="qualified_num"/>
+        <result property="faultyNum" column="faulty_num"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectReceiveOrderDetailVo">
+        select
+            wrod.id,
+            wrod.item_no,
+            wrod.receive_number,
+            wrod.materiel_number,
+            wrod.materiel_name,
+            wrod.model_param,
+            wrod.wl_type,
+            wrod.material_quality,
+            wrod.purchase_num,
+            wrod.receive_num,
+            wrod.weight,
+            wrod.valuation_way,
+            case  wrod.valuation_way
+                when 1 then '按数量计算'
+                when 2 then '按重量计算'
+                else ''
+                end AS valuationWayDesc,
+            CONVERT (wrod.unit_price, DECIMAL (16, 2)) AS unit_price,
+            CONVERT (wrod.subtotal_amount, DECIMAL (16, 2)) AS subtotal_amount,
+            IFNULL((SELECT sum(receive_num) FROM wl_receive_order_detail  WHERE receive_number IN ( SELECT receive_number FROM wl_receive_order_info WHERE purchase_number = ( SELECT purchase_number FROM wl_receive_order_info  WHERE receive_number = wrod.receive_number  AND STATUS = "3" )) and materiel_number=wrod.materiel_number),0.0) AS receivedNum,
+            IFNULL((SELECT SUM(return_quantity) FROM wl_return_order_detail WHERE return_number IN ( SELECT return_number FROM wl_return_order_info WHERE receive_number = wrod.receive_number AND STATUS = "2") AND material_number=wrod.materiel_number),0.0) AS returnedNum,
+            wrod.check_type,
+            case  wrod.check_type
+                when 1 then '全检'
+                when 2 then '抽检'
+                when 3 then '免检'
+                else ''
+                end AS checkTypeName,
+            wrod.remark,
+            wrod.check_num,
+            wrod.qualified_num,
+            wrod.faulty_num,
+            wrod.create_by,
+            wrod.create_time,
+            wrod.update_by,
+            wrod.update_time
+        from wl_receive_order_detail wrod
+    </sql>
+
+    <select id="selectReceiveOrderDetailList" parameterType="ReceiveOrderDetail"
+            resultMap="ReceiveOrderDetailResult">
+        <include refid="selectReceiveOrderDetailVo"/>
+        <where>
+            <if test="receiveNumber != null  and receiveNumber != ''">
+                and wrod.receive_number = #{receiveNumber}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDetailListForPay" parameterType="ReceiveOrderInfo"
+            resultType="Map">
+        select
+            wrod.id,
+            wrod.receive_number as receiveNumber,
+            wrod.materiel_number AS materielNumber,
+            wrod.materiel_name AS materielName,
+            wrod.model_param as modelParam,
+            wrod.wl_type as wlType,
+            wrod.material_quality as materialQuality,
+            CONVERT (wrod.receive_num, DECIMAL (12, 1)) AS receiveNum,
+            CONVERT (wrod.unit_price, DECIMAL (16, 2)) AS unitPrice,
+            CONVERT (wrod.subtotal_amount, DECIMAL (16, 2)) AS subtotalAmount
+        from wl_receive_order_detail wrod
+        left join wl_purchase_order_detail pod on wrod.materiel_number = pod.materiel_number
+        where wrod.receive_number = #{receiveNumber}
+        and pod.purchase_number = #{purchaseNumber}
+    </select>
+
+    <select id="selectReceiveOrderDetailById" parameterType="Long" resultMap="ReceiveOrderDetailResult">
+        <include refid="selectReceiveOrderDetailVo"/>
+        where wrod.id = #{id}
+    </select>
+
+    <insert id="insertReceiveOrderDetail" parameterType="ReceiveOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_order_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="receiveNumber != null">receive_number,
+            </if>
+            <if test="type != null">type,
+            </if>
+            <if test="name != null">name,
+            </if>
+            <if test="materialQuality != null">material_quality,
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number,
+            </if>
+            <if test="specifications != null">specifications,
+            </if>
+            <if test="model != null">model,
+            </if>
+            <if test="num != null">num,
+            </if>
+            <if test="receivedGoodsNum != null">received_goods_num,
+            </if>
+            <if test="waitReceivedNum != null">wait_received_num,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="receiveNumber != null">#{receiveNumber},
+            </if>
+            <if test="type != null">#{type},
+            </if>
+            <if test="name != null">#{name},
+            </if>
+            <if test="materialQuality != null">#{materialQuality},
+            </if>
+            <if test="modulusToothNumber != null">#{modulusToothNumber},
+            </if>
+            <if test="specifications != null">#{specifications},
+            </if>
+            <if test="model != null">#{model},
+            </if>
+            <if test="num != null">#{num},
+            </if>
+            <if test="receivedGoodsNum != null">#{receivedGoodsNum},
+            </if>
+            <if test="waitReceivedNum != null">#{waitReceivedNum},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertReceiveOrderDetailBatch" parameterType="ReceiveOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_order_detail(
+        item_no,
+        receive_number,
+        materiel_number,
+        materiel_name,
+        model_param,
+        wl_type,
+        material_quality,
+        purchase_num,
+        receive_num,
+        weight,
+        valuation_way,
+        unit_price,
+        subtotal_amount,
+        check_type,
+        remark,
+        create_by,
+        create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.itemNo},
+            #{item.receiveNumber},
+            #{item.materielNumber},
+            #{item.materielName},
+            #{item.modelParam},
+            #{item.wlType},
+            #{item.materialQuality},
+            #{item.purchaseNum},
+            #{item.receiveNum},
+            #{item.weight},
+            #{item.valuationWay},
+            #{item.unitPrice},
+            #{item.subtotalAmount},
+            #{item.checkType},
+            #{item.remark},
+            #{item.createBy},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!--ffl-->
+    <update id="updateCheckInfo" parameterType="String">
+        update wl_receive_order_detail
+        set
+        check_num = NULL,
+        faulty_num = NULL,
+        qualified_num = NULL,
+        update_by = NULL,
+        update_time = NULL
+        where receive_number = #{receiveNumber}
+    </update>
+
+
+    <update id="updateReceiveOrderDetail" parameterType="ReceiveOrderDetail">
+        update wl_receive_order_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="receiveNumber != null">receive_number =
+                #{receiveNumber},
+            </if>
+            <if test="type != null">type =
+                #{type},
+            </if>
+            <if test="name != null">name =
+                #{name},
+            </if>
+            <if test="materialQuality != null">material_quality =
+                #{materialQuality},
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number =
+                #{modulusToothNumber},
+            </if>
+            <if test="specifications != null">specifications =
+                #{specifications},
+            </if>
+            <if test="model != null">model =
+                #{model},
+            </if>
+            <if test="num != null">num =
+                #{num},
+            </if>
+            <if test="receivedGoodsNum != null">received_goods_num =
+                #{receivedGoodsNum},
+            </if>
+            <if test="waitReceivedNum != null">wait_received_num =
+                #{waitReceivedNum},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateReceiveOrderDetailBatch" parameterType="ReceiveOrderDetail">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update wl_receive_order_detail
+            <set>
+                check_num = #{item.checkNum},
+                faulty_num = #{item.faultyNum},
+                qualified_num = #{item.qualifiedNum}
+            </set>
+            where receive_number = #{item.receiveNumber} and materiel_number = #{item.materielNumber}
+        </foreach>
+    </update>
+
+    <delete id="deleteReceiveOrderDetailById" parameterType="Long">
+        delete
+        from wl_receive_order_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteReceiveOrderDetailByReceiveNumber" parameterType="String">
+        delete
+        from wl_receive_order_detail
+        where receive_number = #{receiveNumber}
+    </delete>
+
+    <select id="selectReceiveOrderDetailByReceiveNumber" parameterType="String" resultMap="ReceiveOrderDetailResult">
+        <include refid="selectReceiveOrderDetailVo"/>
+        where wrod.receive_number = #{receiveNumber}
+    </select>
+
+    <delete id="deleteReceiveOrderDetailByIds" parameterType="String">
+        delete from wl_receive_order_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="queryReceivedNum" resultType="Integer">
+        SELECT
+        COUNT(a.wait_received_num)
+        FROM
+        wl_receive_order_detail a
+        LEFT JOIN wl_receive_order_info b
+        ON a.receive_number = b.receive_number
+        WHERE
+        b.purchase_number = #{purchaseNumber}
+        <if test="receiveOrderDetail.type != null and receiveOrderDetail.type != ''">
+            and a.type = #{receiveOrderDetail.type}
+        </if>
+        <if test="receiveOrderDetail.name != null and receiveOrderDetail.name != ''">
+            and a.name = #{receiveOrderDetail.name}
+        </if>
+        <if test="receiveOrderDetail.materialQuality != null and receiveOrderDetail.materialQuality != ''">
+            and a.material_quality = #{receiveOrderDetail.materialQuality}
+        </if>
+        <if test="receiveOrderDetail.modulusToothNumber != null and receiveOrderDetail.modulusToothNumber != ''">
+            and a.modulus_tooth_number = #{receiveOrderDetail.modulusToothNumber}
+        </if>
+        <if test="receiveOrderDetail.specifications != null and receiveOrderDetail.specifications != ''">
+            and a.specifications = #{receiveOrderDetail.specifications}
+        </if>
+        <if test="receiveOrderDetail.model != null and receiveOrderDetail.model != ''">
+            and a.model = #{receiveOrderDetail.model}
+        </if>
+        AND a.status = '5';
+    </select>
+
+</mapper>

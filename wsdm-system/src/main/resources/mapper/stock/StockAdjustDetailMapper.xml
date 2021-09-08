@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.StockAdjustDetailMapper">
+
+    <resultMap type="StockAdjustDetail" id="StockAdjustDetailResult">
+        <result property="id" column="id"/>
+        <result property="adjustNumber" column="adjust_number"/>
+        <result property="batchCode" column="batch_code"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialName" column="material_name"/>
+        <result property="param" column="param"/>
+        <result property="stockNum" column="stock_num"/>
+        <result property="stockLockNum" column="stock_lock_num"/>
+        <result property="stockFaultyNum" column="stock_faulty_num"/>
+        <result property="stockAvailableNum" column="stock_available_num"/>
+        <result property="stockAdjustNum" column="stock_adjust_num"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectStockAdjustDetailVo">
+        select
+            id,
+            adjust_number,
+            batch_code,
+            supplier_code,
+            material_id,
+            material_name,
+            param,
+            stock_num,
+            stock_lock_num,
+            stock_faulty_num,
+            stock_available_num,
+            stock_adjust_num,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        from sk_stock_adjust_detail
+    </sql>
+
+    <select id="selectStockAdjustDetailList" parameterType="StockAdjustDetail" resultMap="StockAdjustDetailResult">
+        <include refid="selectStockAdjustDetailVo"/>
+        <where>
+            <if test="adjustNumber != null  and adjustNumber != ''">
+                and adjust_number = #{adjustNumber}
+            </if>
+            <if test="batchCode != null  and batchCode != ''">
+                and batch_code = #{batchCode}
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and supplier_code = #{supplierCode}
+            </if>
+            <if test="materialId != null  and materialId != ''">
+                and material_id = #{materialId}
+            </if>
+            <if test="materialName != null  and materialName != ''">
+                and material_name like concat('%', #{materialName}, '%')
+            </if>
+            <if test="param != null  and param != ''">
+                and param = #{param}
+            </if>
+            <if test="stockNum != null ">
+                and stock_num = #{stockNum}
+            </if>
+            <if test="stockLockNum != null ">
+                and stock_lock_num = #{stockLockNum}
+            </if>
+            <if test="stockFaultyNum != null ">
+                and stock_faulty_num = #{stockFaultyNum}
+            </if>
+            <if test="stockAvailableNum != null ">
+                and stock_available_num = #{stockAvailableNum}
+            </if>
+            <if test="stockAdjustNum != null ">
+                and stock_adjust_num = #{stockAdjustNum}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStockAdjustDetailById" parameterType="Long" resultMap="StockAdjustDetailResult">
+        <include refid="selectStockAdjustDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertStockAdjustDetail" parameterType="StockAdjustDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_adjust_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="adjustNumber != null">adjust_number,
+            </if>
+            <if test="batchCode != null">batch_code,
+            </if>
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="materialId != null">material_id,
+            </if>
+            <if test="materialName != null">material_name,
+            </if>
+            <if test="param != null">param,
+            </if>
+            <if test="stockNum != null">stock_num,
+            </if>
+            <if test="stockLockNum != null">stock_lock_num,
+            </if>
+            <if test="stockFaultyNum != null">stock_faulty_num,
+            </if>
+            <if test="stockAvailableNum != null">stock_available_num,
+            </if>
+            <if test="stockAdjustNum != null">stock_adjust_num,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="adjustNumber != null">#{adjustNumber},
+            </if>
+            <if test="batchCode != null">#{batchCode},
+            </if>
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="materialId != null">#{materialId},
+            </if>
+            <if test="materialName != null">#{materialName},
+            </if>
+            <if test="param != null">#{param},
+            </if>
+            <if test="stockNum != null">#{stockNum},
+            </if>
+            <if test="stockLockNum != null">#{stockLockNum},
+            </if>
+            <if test="stockFaultyNum != null">#{stockFaultyNum},
+            </if>
+            <if test="stockAvailableNum != null">#{stockAvailableNum},
+            </if>
+            <if test="stockAdjustNum != null">#{stockAdjustNum},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertStockAdjustDetailBatch" parameterType="StockAdjustDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_adjust_detail(
+            adjust_number,
+            batch_code,
+            supplier_code,
+            material_id,
+            material_name,
+            param,
+            stock_num,
+            stock_lock_num,
+            stock_faulty_num,
+            stock_available_num,
+            stock_adjust_num,
+            create_by,
+            create_time
+        )
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+                #{item.adjustNumber},
+                #{item.batchCode},
+                #{item.supplierCode},
+                #{item.materialId},
+                #{item.materialName},
+                #{item.param},
+                #{item.stockNum},
+                #{item.stockLockNum},
+                #{item.stockFaultyNum},
+                #{item.stockAvailableNum},
+                #{item.stockAdjustNum},
+                #{item.createBy},
+                #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateStockAdjustDetail" parameterType="StockAdjustDetail">
+        update sk_stock_adjust_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="adjustNumber != null">adjust_number =
+                #{adjustNumber},
+            </if>
+            <if test="batchCode != null">batch_code =
+                #{batchCode},
+            </if>
+            <if test="supplierCode != null">supplier_code =
+                #{supplierCode},
+            </if>
+            <if test="materialId != null">material_id =
+                #{materialId},
+            </if>
+            <if test="materialName != null">material_name =
+                #{materialName},
+            </if>
+            <if test="param != null">param =
+                #{param},
+            </if>
+            <if test="stockNum != null">stock_num =
+                #{stockNum},
+            </if>
+            <if test="stockLockNum != null">stock_lock_num =
+                #{stockLockNum},
+            </if>
+            <if test="stockFaultyNum != null">stock_faulty_num =
+                #{stockFaultyNum},
+            </if>
+            <if test="stockAvailableNum != null">stock_available_num =
+                #{stockAvailableNum},
+            </if>
+            <if test="stockAdjustNum != null">stock_adjust_num =
+                #{stockAdjustNum},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStockAdjustDetailById" parameterType="Long">
+        delete
+        from sk_stock_adjust_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteStockAdjustDetailByAdjustNumber" parameterType="String">
+        delete
+        from sk_stock_adjust_detail
+        where adjust_number = #{adjustNumber}
+    </delete>
+
+    <select id="selectStockAdjustDetailByAdjustNumber" parameterType="String" resultMap="StockAdjustDetailResult">
+        <include refid="selectStockAdjustDetailVo"/>
+        where adjust_number = #{adjustNumber}
+    </select>
+
+    <delete id="deleteStockAdjustDetailByIds" parameterType="String">
+        delete from sk_stock_adjust_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

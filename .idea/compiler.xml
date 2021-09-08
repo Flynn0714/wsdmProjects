@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="wsdm-admin" />
+        <module name="wsdm-common" />
+        <module name="wsdm-framework" />
+        <module name="wsdm-generator" />
+        <module name="wsdm-stock" />
+        <module name="wsdm-system" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Wisdom" target="1.8" />
+      <module name="wsdm-admin" target="1.8" />
+      <module name="wsdm-common" target="1.8" />
+      <module name="wsdm-framework" target="1.8" />
+      <module name="wsdm-generator" target="1.8" />
+      <module name="wsdm-quartz" target="1.8" />
+      <module name="wsdm-stock" target="1.8" />
+      <module name="wsdm-system" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

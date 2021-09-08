@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchaseOrderInfoMapper">
+
+    <resultMap type="PurchaseOrderInfo" id="PurchaseOrderInfoResult">
+        <result property="id" column="id"/>
+        <result property="purchaseNumber" column="purchase_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contacts" column="contacts"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="purchaseDate" column="purchase_date"/>
+        <result property="expectArrivalDate" column="expect_arrival_date"/>
+        <result property="arrivalDate" column="arrival_date"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="totalPurchaseNum" column="total_purchase_num"/>
+        <result property="totalPurchaseAmount" column="total_purchase_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="batchNumber" column="batch_number"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="PurchaseOrderInfoVo" id="PurchaseOrderInfoVoResult">
+        <result property="id" column="id"/>
+        <result property="purchaseNumber" column="purchase_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contacts" column="contacts"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="purchaseDate" column="purchase_date"/>
+        <result property="expectArrivalDate" column="expect_arrival_date"/>
+        <result property="arrivalDate" column="arrival_date"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="totalPurchaseNum" column="total_purchase_num"/>
+        <result property="totalPurchaseAmount" column="total_purchase_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchaseOrderInfoVo">
+        select
+            wpoi.id,
+            wpoi.purchase_number,
+            wpoi.supplier_code,
+            ws.supplier_name AS supplierName,
+            wpoi.contacts,
+            wpoi.contact_number,
+            wpoi.purchase_date,
+            wpoi.expect_arrival_date,
+            wpoi.arrival_date,
+            wpoi.purchase_type,
+            sdd1.dict_label AS purchaseTypeName,
+            wpoi.total_purchase_num,
+            wpoi.total_purchase_amount,
+            wpoi.remark,
+            wpoi.status,
+            wpoi.batch_number,
+            sdd2.dict_label AS statusName,
+            u3.nick_name AS audit_by,
+            wpoi.audit_time,
+            u1.nick_name AS create_by,
+            wpoi.create_time,
+            u2.nick_name AS update_by,
+            wpoi.update_time
+        from wl_purchase_order_info wpoi
+         left join wl_supplier ws on wpoi.supplier_code = ws.supplier_code
+         left join sys_dict_data sdd1 on wpoi.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+         left join sys_dict_data sdd2 on wpoi.status = sdd2.dict_value and sdd2.dict_type = 'dict_purchase_status'
+         left join sys_user u1 on u1.user_name = wpoi.create_by
+         left join sys_user u2 on u2.user_name = wpoi.update_by
+         left join sys_user u3 on u3.user_name = wpoi.audit_by
+    </sql>
+
+    <sql id="selectPurchaseForReceiveVo">
+        select
+            wpoi.id,
+            wpoi.purchase_number,
+            wpoi.supplier_code,
+            ws.supplier_name AS supplierName,
+            wpoi.contacts,
+            wpoi.contact_number,
+            wpoi.purchase_date,
+            wpoi.expect_arrival_date,
+            wpoi.arrival_date,
+            wpoi.purchase_type,
+            sdd1.dict_label AS purchaseTypeName,
+            wpoi.total_purchase_num,
+            wpoi.total_purchase_amount,
+            wpoi.remark,
+            @ss := IFNULL((select sum(receive_num) from wl_receive_order_detail where receive_number IN (SELECT receive_number FROM wl_receive_order_info where purchase_number =wpoi.purchase_number and status = "3")),0.0) AS totalReceivedNum,
+            CASE WHEN @ss = 0 THEN '未收货'
+            ELSE '部分收货'
+            END AS receiveStatusName,
+            u3.nick_name AS audit_by,
+            wpoi.audit_time,
+            u1.nick_name AS create_by,
+            wpoi.create_time,
+            u2.nick_name AS update_by,
+            wpoi.update_time
+        from wl_purchase_order_info wpoi
+        left join wl_supplier ws on wpoi.supplier_code = ws.supplier_code
+        left join sys_dict_data sdd1 on wpoi.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+        left join sys_dict_data sdd2 on wpoi.status = sdd2.dict_value and sdd2.dict_type = 'dict_purchase_status'
+        left join sys_user u1 on u1.user_name = wpoi.create_by
+        left join sys_user u2 on u2.user_name = wpoi.update_by
+        left join sys_user u3 on u3.user_name = wpoi.audit_by
+    </sql>
+
+    <select id="selectPurchaseListForReceive" parameterType="PurchaseOrderInfo"
+            resultMap="PurchaseOrderInfoVoResult">
+        <include refid="selectPurchaseForReceiveVo"/>
+        where
+            wpoi.status = #{status}
+            <if test="purchaseNumber != null  and purchaseNumber != ''">
+                and  wpoi.purchase_number  like concat('%', #{purchaseNumber}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and  wpoi.supplier_code = #{supplierCode}
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and wpoi.purchase_type = #{purchaseType}
+            </if>
+            HAVING totalReceivedNum &lt; wpoi.total_purchase_num
+            order by wpoi.purchase_number desc
+    </select>
+
+
+    <select id="selectPurchaseOrderInfoList" parameterType="PurchaseOrderInfoVo"
+            resultMap="PurchaseOrderInfoResult">
+        <include refid="selectPurchaseOrderInfoVo"/>
+        <where>
+            <if test="purchaseNumber != null  and purchaseNumber != ''">
+                and  wpoi.purchase_number  like concat('%', #{purchaseNumber}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and  wpoi.supplier_code = #{supplierCode}
+            </if>
+            <if test="purchaseStartDate != null">
+                and  wpoi.purchase_date &gt;= #{purchaseStartDate}
+            </if>
+            <if test="purchaseEndDate != null">
+                and  wpoi.purchase_date &lt;= #{purchaseEndDate}
+            </if>
+            <if test="expectArrivalStartDate != null">
+                and  wpoi.expect_arrival_date &gt;= #{expectArrivalStartDate}
+            </if>
+            <if test="expectArrivalEndDate != null">
+                and  wpoi.expect_arrival_date &lt;= #{expectArrivalEndDate}
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and wpoi.purchase_type = #{purchaseType}
+            </if>
+            <if test="status != null  and status != ''">
+                and wpoi.status = #{status}
+            </if>
+            <if test="batchNumber != null  and batchNumber != ''">
+                and wpoi.batch_number = #{batchNumber}
+            </if>
+        </where>
+        order by wpoi.purchase_number desc
+    </select>
+
+    <select id="selectPurchaseOrderInfoById" parameterType="Long" resultMap="PurchaseOrderInfoVoResult">
+        <include refid="selectPurchaseOrderInfoVo"/>
+        where wpoi.id = #{id}
+    </select>
+
+    <select id="selectPurchaseOrderInfoByIds" parameterType="String" resultMap="PurchaseOrderInfoResult">
+        <include refid="selectPurchaseOrderInfoVo"/>
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="getMaxPurchaseCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(purchase_number, #{prefix}, '') + 0)) maxCode
+        FROM wl_purchase_order_info
+        WHERE purchase_number REGEXP CONCAT(#{prefix}
+            ,'[0-9]*$')
+    </select>
+
+    <select id="getMaxAutomaticPurchaseCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(batch_number, #{prefix}, '') + 0)) maxCode
+        FROM wl_purchase_order_info
+        WHERE purchase_number REGEXP CONCAT(#{prefix} ,'[0-9]*$')
+    </select>
+
+    <select id="automaticPurchaseInfo" resultType="com.wsdm.materiel.domain.AutomaticPurchaseInfo" parameterType="String">
+        select mpv.number, mpv.`name`,mpv.model AS modelParam, mpv.type,
+               case mpv.type when 'D' then '五金采购' else '原料采购' end AS typeName,
+               mpv.num, mpv.stockTransitNum, (ppd.num*somd.quantity) AS needNum,
+               wdsc.supplier_code AS supplierCode,IFNULL(ws.supplier_name,'无默认供应商') AS supplierName,
+               contract.contract_number AS contractNumber, contract.price, ws.contacts, ws.contact_number AS contactNumber
+        from materials_purchase_view mpv
+        LEFT JOIN pd_produce_details ppd on concat(ppd.ref,".M") = mpv.number
+        LEFT JOIN sales_order_manage_details somd on somd.material_number = ppd.produce
+        left join wl_default_supplier_config wdsc on wdsc.purchase_category_id = mpv.type
+        left join wl_supplier ws on ws.supplier_code = wdsc.supplier_code
+        left join (select psci.supplier_code, pscd.contract_number, pscd.material_number, pscd.price, pscd.model_param
+                  from purchase_supplier_contract_detail pscd
+                  LEFT JOIN purchase_supplier_contract_info psci on psci.contract_number = pscd.contract_number
+                  where psci.audit_status = '2' and contract_start_date <![CDATA[ <= ]]> now() and contract_end_date <![CDATA[ >= ]]> NOW()
+        ) contract ON contract.supplier_code = wdsc.supplier_code and contract.material_number = mpv.number
+
+        where somd.sales_number in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach> and mpv.type != 'B'
+    </select>
+
+    <update id="updateAuditStatus" parameterType="PurchaseOrderInfo">
+        update wl_purchase_order_info
+        set
+        <if test="auditBy != null  and auditBy!= ''">
+            audit_by = #{auditBy},
+        </if>
+        <if test="auditTime != null">
+            audit_time = #{auditTime},
+        </if>
+        status = #{status}
+        <where>
+            <if test="purchaseNumber != null and purchaseNumber != ''">
+                and purchase_number = #{purchaseNumber}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <insert id="insertPurchaseOrderInfo" parameterType="PurchaseOrderInfoVo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_order_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="purchaseNumber != null">purchase_number,
+            </if>
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="contacts != null">contacts,
+            </if>
+            <if test="contactNumber != null">contact_number,
+            </if>
+            <if test="purchaseDate != null">purchase_date,
+            </if>
+            <if test="expectArrivalDate != null">expect_arrival_date,
+            </if>
+            <if test="arrivalDate != null">arrival_date,
+            </if>
+            <if test="purchaseType != null">purchase_type,
+            </if>
+            <if test="totalPurchaseNum != null">total_purchase_num,
+            </if>
+            <if test="totalPurchaseAmount != null">total_purchase_amount,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="batchNumber != null">batch_number,
+            </if>
+            <if test="auditBy != null">audit_by,
+            </if>
+            <if test="auditTime != null">audit_time,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="purchaseNumber != null">#{purchaseNumber},
+            </if>
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="contacts != null">#{contacts},
+            </if>
+            <if test="contactNumber != null">#{contactNumber},
+            </if>
+            <if test="purchaseDate != null">#{purchaseDate},
+            </if>
+            <if test="expectArrivalDate != null">#{expectArrivalDate},
+            </if>
+            <if test="arrivalDate != null">#{arrivalDate},
+            </if>
+            <if test="purchaseType != null">#{purchaseType},
+            </if>
+            <if test="totalPurchaseNum != null">#{totalPurchaseNum},
+            </if>
+            <if test="totalPurchaseAmount != null">#{totalPurchaseAmount},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="batchNumber != null">#{batchNumber},
+            </if>
+            <if test="auditBy != null">#{auditBy},
+            </if>
+            <if test="auditTime != null">#{auditTime},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updatePurchaseOrderInfo" parameterType="PurchaseOrderInfo">
+        update wl_purchase_order_info
+        set
+            supplier_code = #{supplierCode},
+            contacts = #{contacts},
+            contact_number = #{contactNumber},
+            purchase_date = #{purchaseDate},
+            expect_arrival_date = #{expectArrivalDate},
+            <if test="arrivalDate != null">
+                arrival_date = #{arrivalDate},
+            </if>
+            purchase_type = #{purchaseType},
+            total_purchase_num = #{totalPurchaseNum},
+            total_purchase_amount = #{totalPurchaseAmount},
+            remark = #{remark},
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time =  #{updateTime},
+            </if>
+            status = #{status}
+        <where>
+            <if test="purchaseNumber != null  and purchaseNumber != ''">
+                and purchase_number = #{purchaseNumber}
+            </if>
+            <if test="id != null  and id != ''">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <delete id="deletePurchaseOrderInfoById" parameterType="Long">
+        update wl_purchase_order_info
+        set status ='2'
+        where id = #{id}
+    </delete>
+
+    <delete id="deletePurchaseOrderInfoByIds" parameterType="String">
+        update wl_purchase_order_info
+        set status ='2'
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

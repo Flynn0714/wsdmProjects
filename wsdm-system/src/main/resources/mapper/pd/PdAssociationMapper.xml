@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdAssociationMapper">
+    <resultMap id="PdAssociationResult" type="PdAssociation">
+        <result property="id" column="id"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="materialName" column="material_name"/>
+        <result property="detailsType" column="details_type"/>
+        <result property="specs" column="specs"/>
+        <result property="pdId" column="pd_id"/>
+        <result property="status" column="status"/>
+        <result property="annexName" column="annex_name"/>
+        <result property="annexUrl" column="annex_url"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="PdProduceManage" id="PdProduceManageResult">
+        <result property="id" column="id"/>
+        <result property="produceNumber" column="number"/>
+        <result property="produceModel" column="model"/>
+        <result property="produceName" column="name"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <resultMap type="PdSemiProduceManage" id="PdSemiProduceManageResult">
+        <result property="id" column="id"/>
+        <result property="semiProduceName" column="semi_produce_name"/>
+        <result property="semiProduceNumber" column="semi_produce_number"/>
+        <result property="semiProduceModel" column="semi_produce_model"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="PdProduceManage" id="PdProduceManageResult1">
+        <result property="id" column="id"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="produceNumber" column="produce_number"/>
+        <result property="produceModel" column="produce_model"/>
+        <result property="speedRatio" column="speed_ratio"/>
+        <result property="assembleModality" column="assemble_modality"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!--根据物料编码查询pdid-->
+    <select id="selectInnerPdIdByNo" parameterType="String" resultType="String">
+        select pd_id
+        from pd_association
+        where material_number = #{materialNumber}
+    </select>
+
+    <!--根据pdid查找内部产品类型-->
+    <select id="selectTypeByPdid" parameterType="String" resultType="String">
+        select details_type
+        from pd_association
+        where pd_id = #{pdId} limit 1
+    </select>
+
+    <!--根据pdid查找成品编码-->
+    <select id="selectNoByPdid" parameterType="String" resultMap="PdProduceManageResult1">
+        select *
+        from pd_produce_manage
+        where id = #{pdId}
+    </select>
+
+       <!--根据pdid查找成品编码-->
+    <select id="selectSemiByPdid" parameterType="String" resultMap="PdSemiProduceManageResult">
+        select *
+        from pd_semi_produce_manage
+        where id = #{pdId}
+    </select>
+
+    <!--生成产品编码号-->
+    <select id="getMaxCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(material_number, #{code}, '') + 0)) maxCode
+        FROM pd_association
+        WHERE material_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <!--查询产品关联列表-->
+    <select id="queryPdAssociList" parameterType="PdAssociation" resultMap="PdAssociationResult">
+        SELECT
+            pa.id,
+            pa.material_name,
+            pa.material_number,
+            pa.details_type,
+            pa.specs,
+            pa.status,
+            pa.annex_name,
+            pa.remark,
+            pa.create_by,
+            pa.create_time,
+            pa.update_by,
+            pa.update_time
+        FROM pd_association pa
+        <where>
+            <if test="materialName != null  and materialName != ''">
+                and material_name like concat('%',#{materialName},'%')
+            </if>
+            <if test="materialNumber != null  and materialNumber != ''">
+                and material_number like concat('%',#{materialNumber},'%')
+            </if>
+            <if test="specs != null  and specs != ''">
+                and specs like concat('%',#{specs},'%')
+            </if>
+            <if test="detailsType != null  and detailsType != ''">
+                and details_type = #{detailsType}
+            </if>
+        </where>
+    </select>
+
+    <!--根据规格是否已存在查询产品-->
+    <select id="selectPdAssociBySpecs" parameterType="String" resultMap="PdAssociationResult">
+        select *
+        from pd_association
+        where specs = #{specs}
+    </select>
+
+    <!--查询状态是否可以编辑-->
+    <select id="selectPdAssociByStatus" parameterType="Long" resultMap="PdAssociationResult">
+        select
+          pa.status
+        from pd_association pa
+        where id = #{id}
+    </select>
+
+    <!--根据id查询产品，不存在不可删除-->
+    <select id="selectPdAssicoById" parameterType="Long" resultMap="PdAssociationResult">
+        select *
+        from pd_association
+        where id = #{id}
+    </select>
+
+    <!--查询内部产品-->
+    <select id="selectPdProduct" parameterType="PdProduceManage" resultMap="PdProduceManageResult">
+        select *
+        from pd_asscit_view
+        <where>
+            <if test="produceName != null  and produceName != ''">
+                and name like concat('%',#{produceName},'%')
+            </if>
+            <if test="produceNumber != null  and produceNumber != ''">
+                and number like concat('%',#{produceNumber},'%')
+            </if>
+            <if test="type != null  and type != ''">
+                and type = #{type}
+            </if>
+        </where>
+    </select>
+
+    <!--新增-->
+    <insert id="insertPdAssoci" parameterType="PdAssociation">
+        insert into pd_association
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="materialName != null">material_name,
+            </if>
+            <if test="detailsType != null">details_type,
+            </if>
+            <if test="specs != null">specs,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="annexName != null">annex_name,
+            </if>
+            <if test="annexUrl != null">annex_url,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="materialName != null">#{materialName},
+            </if>
+            <if test="detailsType != null">#{detailsType},
+            </if>
+            <if test="specs != null">#{specs},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="annexName != null">#{annexName},
+            </if>
+            <if test="annexUrl != null">#{annexUrl},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <!--编辑-->
+    <update id="editPdAssoci" parameterType="PdAssociation">
+        update pd_association
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="materialName != null">material_name =
+                #{materialName},
+            </if>
+            <if test="specs != null">specs =
+                #{specs},
+            </if>
+            <if test="detailsType != null">details_type =
+                #{detailsType},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="annexName != null">annex_name =
+                #{annexName},
+            </if>
+            <if test="annexUrl != null">annex_url =
+                #{annexUrl},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <!--去关联-->
+    <update id="toRelation" parameterType="PdAssociation">
+        update pd_association
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="pdId != null">pd_id =
+                #{pdId},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+            <if test="status != null">status =
+                #{status},
+            </if>
+            <if test="detailsType != null">details_type =
+                #{detailsType},
+            </if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <!--删除产品关联-->
+    <delete id="deletePdAssoci" parameterType="Long">
+        delete from pd_association where id = #{id}
+    </delete>
+</mapper>

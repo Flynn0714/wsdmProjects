@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderManageMapper">
+
+    <resultMap type="SalesOrderManage" id="SalesOrderManageResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="orderType" column="order_type"/>
+        <result property="level" column="level"/>
+        <result property="orderQuantity" column="order_quantity"/>
+        <result property="orderAmount" column="order_amount"/>
+        <result property="orderGathering" column="order_gathering"/>
+        <result property="orderDate" column="order_date"/>
+        <result property="expectedDeliveryDate" column="expected_delivery_date"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderManageInfo" id="SalesOrderManageInfoResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="orderType" column="order_type"/>
+        <result property="level" column="level"/>
+        <result property="orderQuantity" column="order_quantity"/>
+        <result property="orderAmount" column="order_amount"/>
+        <result property="orderGathering" column="order_gathering"/>
+        <result property="orderDate" column="order_date"/>
+        <result property="expectedDeliveryDate" column="expected_delivery_date"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="customerName" column="customerName"/>
+        <result property="orderTypeName" column="orderTypeName"/>
+        <result property="levelName" column="levelName"/>
+        <result property="statusName" column="statusName"/>
+        <result property="approveName" column="approveName"/>
+        <result property="createName" column="createName"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderManageDetails" id="SalesOrderManageDetailsResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="detailsType" column="details_type"/>
+        <result property="quantity" column="quantity"/>
+        <result property="price" column="price"/>
+        <result property="subtotal" column="subtotal"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="materialName" column="materialName"/>
+        <result property="detailsTypeName" column="detailsTypeName"/>
+    </resultMap>
+
+    <select id="selectSalesOrderManageList" parameterType="SalesOrderManageRequest" resultMap="SalesOrderManageInfoResult">
+        SELECT
+            som.id,
+            som.sales_number,
+            som.customer,
+            CONCAT(soc.customer_number, '.', soc.customer_name) AS customerName,
+            som.order_type,
+            sdd2.dict_label AS orderTypeName,
+            som.`level`,
+            if(som.`level` = 1, '紧急', '非紧急') AS levelName,
+            som.order_quantity,
+            som.order_amount,
+            som.order_gathering,
+            som.order_date,
+            som.expected_delivery_date,
+            som.remark,
+            som.`status`,
+            sdd1.dict_label AS statusName,
+            su1.nick_name AS create_by,
+            som.create_time
+        FROM
+          sales_order_manage som
+        left join sales_order_customer soc on soc.customer_number = som.customer
+        left join sys_user su1 on su1.user_name = som.create_by
+        left join sys_dict_data sdd1 on sdd1.dict_value = som.`status` and sdd1.dict_type = 'dict_sale_order_status'
+        left join sys_dict_data sdd2 on sdd2.dict_value = som.order_type and sdd2.dict_type = 'dict_sale_order_type'
+        <where>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and som.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and som.customer = #{customer}
+            </if>
+            <if test="level != null  and level != ''">
+                and som.`level` = #{level}
+            </if>
+            <if test="orderType != null">
+                and som.order_type = #{orderType}
+            </if>
+            <if test="orderStartDate != null">
+                and som.order_date &gt;= #{orderStartDate}
+            </if>
+            <if test="expectedDeliveryStartDate != null">
+                and som.expected_delivery_date &gt;= #{expectedDeliveryStartDate}
+            </if>
+            <if test="orderEndDate != null">
+                and som.order_date &lt;= #{orderEndDate}
+            </if>
+            <if test="expectedDeliveryEndDate != null">
+                and som.expected_delivery_date &lt;= #{expectedDeliveryEndDate}
+            </if>
+            <if test="status != null  and status != ''">
+                and som.`status` = #{status}
+            </if>
+        </where>
+        ORDER BY som.order_date DESC, som.sales_number DESC
+    </select>
+
+    <select id="selectSalesOrderManageDetailsList" parameterType="String" resultMap="SalesOrderManageDetailsResult">
+        select somd.id,
+           somd.sales_number,
+           somd.material_number,
+           pa.material_name AS materialName,
+           pa.specs  specs,
+           somd.details_type,
+           sdd.dict_label AS detailsTypeName,
+           somd.quantity,
+           somd.price,
+           somd.subtotal,
+           somd.remark,
+           su1.nick_name AS create_by,
+           somd.create_time,
+           su2.nick_name AS update_by,
+           somd.update_time
+        from sales_order_manage_details somd
+        left join sys_user su1 on su1.user_name = somd.create_by
+        left join sys_user su2 on su2.user_name = somd.update_by
+        LEFT JOIN sys_dict_data sdd on sdd.dict_value = somd.`details_type` and sdd.dict_type = 'dict_material_type'
+        left join pd_association pa on pa.material_number  = somd.material_number
+        where somd.sales_number = #{salesNumber}
+    </select>
+
+    <select id="selectSalesOrderManageById" parameterType="Long" resultMap="SalesOrderManageInfoResult">
+        SELECT
+            som.id,
+            som.sales_number,
+            som.customer,
+            CONCAT(soc.customer_number, '.', soc.customer_name) AS customerName,
+            som.order_type,
+            sdd2.dict_label AS orderTypeName,
+            som.`level`,
+            if(som.`level` = 1, '紧急', '非紧急') AS levelName,
+            som.order_quantity,
+            som.order_amount,
+            som.order_gathering,
+            som.order_date,
+            som.expected_delivery_date,
+            som.remark,
+            som.`status`,
+            sdd1.dict_label AS statusName,
+            su1.nick_name AS createName,
+            som.create_by,
+            som.create_time,
+            su3.nick_name AS update_by,
+            som.update_time,
+            som.approve,
+            su2.nick_name AS approveName,
+            som.approve_time
+        FROM
+            sales_order_manage som
+        left join sales_order_customer soc on soc.customer_number = som.customer
+        left join sys_user su1 on su1.user_name = som.create_by
+        left join sys_user su2 on su2.user_name = som.approve
+        left join sys_user su3 on su3.user_name = som.update_by
+        left join sys_dict_data sdd1 on sdd1.dict_value = som.`status` and sdd1.dict_type = 'dict_sale_order_status'
+        left join sys_dict_data sdd2 on sdd2.dict_value = som.order_type and sdd2.dict_type = 'dict_sale_order_type'
+        where som.id = #{id}
+    </select>
+
+    <select id="selectSalesOrderManageBySalesNumber" parameterType="String" resultMap="SalesOrderManageInfoResult">
+        SELECT
+            som.id,
+            som.sales_number,
+            som.customer,
+            CONCAT(soc.customer_number, '.', soc.customer_number) AS customerName,
+            som.order_type,
+            sdd2.dict_label AS orderTypeName,
+            som.`level`,
+            if(som.`level` = 1, '紧急', '非紧急') AS levelName,
+            som.order_quantity,
+            som.order_amount,
+            som.order_gathering,
+            som.order_date,
+            som.expected_delivery_date,
+            som.remark,
+            som.`status`,
+            sdd.dict_label AS statusName,
+            su1.nick_name AS createName,
+            som.create_by,
+            som.create_time,
+            su3.nick_name AS update_by,
+            som.update_time,
+            som.approve,
+            su2.nick_name AS approveName,
+            som.approve_time
+        FROM sales_order_manage som
+        left join sales_order_customer soc on soc.customer_number = som.customer
+        left join sys_user su1 on su1.user_name = som.create_by
+        left join sys_user su2 on su2.user_name = som.approve
+        left join sys_user su3 on su3.user_name = som.update_by
+        left join sys_dict_data sdd on sdd.dict_value = som.`status` and sdd.dict_type = 'dict_sale_order_status'
+        left join sys_dict_data sdd2 on sdd2.dict_value = som.order_type and sdd.dict_type = 'dict_sale_order_type'
+        where som.sales_number = #{salesNumber}
+    </select>
+
+    <select id="selectSalesOrderManageDetailsById" parameterType="Long" resultMap="SalesOrderManageDetailsResult">
+        select somd.id,
+           somd.sales_number,
+           somd.material_number,
+           somd.details_type,
+           sdd.dict_label AS detailsTypeName,
+           somd.quantity,
+           somd.price,
+           somd.subtotal,
+           somd.remark,
+           su1.nick_name AS create_by,
+           somd.create_time,
+           su2.nick_name AS update_by,
+           somd.update_time
+        from sales_order_manage_details somd
+        left join sys_user su1 on su1.user_name = som.create_by
+        left join sys_user su2 on su2.user_name = som.update_by
+        LEFT JOIN sys_dict_data sdd on sdd.dict_value = somd.`details_type` and sdd.dict_type = 'dict_material_type'
+        where somd.id = #{id}
+    </select>
+
+    <select id="getOrderGatheringByNumber" parameterType="String" resultType="SalesOrderManageGathering">
+        SELECT
+            sogd.id,
+            sogd.sales_number AS salesNumber,
+            sogd.payment_method AS paymentMethod,
+            d1.dict_label AS paymentMethodName,
+            sogd.receiving_bank AS receivingBank,
+            d2.dict_label AS receivingBankName,
+            sogd.payee_amount AS payeeAmount,
+            sogd.account_number AS accountNumber,
+            sogd.remark
+        FROM sales_order_manage_gathering sogd
+        LEFT JOIN sys_dict_data d1 on d1.dict_value = sogd.payment_method and d1.dict_type = 'payment_method'
+        LEFT JOIN sys_dict_data d2 on d2.dict_value = sogd.receiving_bank and d2.dict_type = 'payment_bank'
+        where sogd.sales_number = #{salesNumber}
+    </select>
+
+    <select id="getSalesOrderByDelivery" resultType = "Map">
+        select
+            som.id,
+            som.sales_number AS salesNumber,
+            som.customer,
+            CONCAT(c.customer_number,'.',c.customer_name) AS customerName,
+            case
+            som.`level`
+            when 1 then '紧急'
+            else '非紧急'
+            end AS levelName,
+            som.order_date AS orderDate,
+            som.expected_delivery_date AS expectedDeliveryDate,
+            som.order_quantity AS total,
+            @ss := IFNULL( ( SELECT sum( a.delivered_quantity ) FROM sales_order_delivery a WHERE a.sales_number = som.sales_number ), 0.0 ) AS deliveredQuantity,
+            CASE WHEN @ss = 0 THEN '待发货'
+                 WHEN som.order_quantity > @ss THEN '部分发货' ELSE '全部发货'
+            END AS statusName
+        from sales_order_manage som
+        left join sys_dict_data d2 on d2.dict_value = som.`status` and d2.dict_type = 'dict_sale_order_status'
+        left join sales_order_customer c on c.customer_number = som.customer
+        where som.`status` = '2'
+        <if test="customer != null and customer != ''">
+            and som.customer = #{customer}
+        </if>
+        <if test="salesNumber != null and salesNumber != ''">
+            and som.sales_number like concat('%', #{salesNumber}, '%')
+        </if>
+        HAVING total > deliveredQuantity
+    </select>
+
+    <select id="salesOrderAutomaticPurchase" resultType = "com.wsdm.sale.domain.SalesOrderAutomaticPurchase">
+        SELECT
+        som.id,
+        som.sales_number AS salesNumber,
+        som.customer,
+        CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+        som.order_type AS orderType,
+        d2.dict_label AS orderTypeName,
+        som.`level`,
+        CASE
+            som.`level`
+            WHEN 1 THEN
+            '紧急' ELSE '非紧急'
+        END AS levelName,
+        som.order_quantity AS orderQuantity,
+        som.order_amount AS orderAmount,
+        som.order_date AS orderDate,
+        som.expected_delivery_date AS expectedDeliveryDate,
+        IFNULL((SELECT sum( a.delivered_quantity ) FROM sales_order_delivery a WHERE a.sales_number = som.sales_number), 0) AS deliveredQuantity
+        FROM sales_order_manage som
+        LEFT JOIN sys_dict_data d2 ON d2.dict_value = som.order_type AND d2.dict_type = 'dict_sale_order_type'
+        LEFT JOIN sales_order_customer c ON c.customer_number = som.customer
+        WHERE som.`status` = '2'
+        HAVING deliveredQuantity = 0
+        ORDER BY som.create_time desc
+        limit 30;
+    </select>
+
+    <insert id="insertSalesOrderManageDetailsBatch"  parameterType="SalesOrderManageDetails">
+        insert into sales_order_manage_details (sales_number, material_number, details_type, quantity,
+                    price, subtotal, remark, create_by, create_time) values
+        <foreach collection ="list" item="item" index="index" separator =",">
+            (#{item.salesNumber}, #{item.materialNumber}, #{item.detailsType}, #{item.quantity},
+            #{item.price}, #{item.subtotal}, #{item.remark}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrderManageGatheringBatch" parameterType="SalesOrderManageGathering">
+        insert into sales_order_manage_gathering(sales_number, payment_method, receiving_bank, payee_amount, account_number, remark)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.salesNumber}, #{item.paymentMethod}, #{item.receivingBank}, #{item.payeeAmount}, #{item.accountNumber}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <update id="updateSalesOrderManageDetailsBatch" parameterType="SalesOrderManageDetails">
+        <foreach collection="list" item="item" index="index" separator=";">
+            update sales_order_manage_details
+            <trim prefix="SET" suffixOverrides=",">
+                sales_number = #{item.salesNumber},
+                `material_number` = #{item.materialNumber},
+                details_type = #{item.detailsType},
+                quantity = #{item.quantity},
+                price = #{item.price},
+                subtotal = #{item.subtotal},
+                remark = #{item.remark},
+                <if test="item.status != null">
+                    `status` = #{item.status},
+                </if>
+                <if test="item.createBy != null">
+                    create_by = #{item.createBy},
+                </if>
+                <if test="item.createTime != null">
+                    create_time = #{item.createTime},
+                </if>
+                <if test="item.updateBy != null">
+                    update_by = #{item.updateBy},
+                </if>
+                <if test="uitem.pdateTime != null">
+                    update_time = #{item.updateTime},
+                </if>
+            </trim>
+            where id = #{id}
+        </foreach>
+    </update>
+
+    <insert id="insertSalesOrderManage" parameterType="SalesOrderManage" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customer != null">customer,
+            </if>
+            <if test="orderType != null">order_type,
+            </if>
+            <if test="level != null">`level`,
+            </if>
+            <if test="orderQuantity != null">order_quantity,
+            </if>
+            <if test="orderAmount != null">order_amount,
+            </if>
+            <if test="orderGathering != null">order_gathering,
+            </if>
+            <if test="orderDate != null">order_date,
+            </if>
+            <if test="expectedDeliveryDate != null">expected_delivery_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">`status`,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="orderType != null">#{orderType},
+            </if>
+            <if test="level != null">#{level},
+            </if>
+            <if test="orderQuantity != null">#{orderQuantity},
+            </if>
+            <if test="orderAmount != null">#{orderAmount},
+            </if>
+            <if test="orderGathering != null">#{orderGathering},
+            </if>
+            <if test="orderDate != null">#{orderDate},
+            </if>
+            <if test="expectedDeliveryDate != null">#{expectedDeliveryDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesOrderManage" parameterType="SalesOrderManage">
+        update sales_order_manage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customer != null and customer != ''">
+                customer = #{customer},
+            </if>
+            <if test="orderType != null and orderType != ''">
+                order_type = #{orderType},
+            </if>
+            <if test="level != null and level != ''">
+                `level` = #{level},
+            </if>
+            <if test="orderQuantity != null">
+                order_quantity = #{orderQuantity},
+            </if>
+            <if test="orderAmount != null">
+                order_amount = #{orderAmount},
+            </if>
+            order_gathering = #{orderGathering},
+            <if test="orderDate != null">
+                order_date = #{orderDate},
+            </if>
+            <if test="expectedDeliveryDate != null">
+                expected_delivery_date = #{expectedDeliveryDate},
+            </if>
+
+            remark = #{remark},
+
+            <if test="status != null and status != ''">
+                `status` = #{status},
+            </if>
+            <if test="createBy != null and createBy != ''">
+                create_by = #{createBy},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateBy != null and updateBy != ''">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="approve != null">
+                approve = #{approve},
+            </if>
+            <if test="approveTime != null">
+                approve_time = #{approveTime},
+            </if>
+        </trim>
+        <where>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sales_number = #{salesNumber}
+            </if>
+            <if test="id != null  and id != ''">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="approveSalesOrderManage" parameterType="SalesOrderManage">
+        update sales_order_manage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="status != null and status != ''">
+                `status` = #{status},
+            </if>
+            <if test="approve != null">
+                approve = #{approve},
+            </if>
+            <if test="approveTime != null">
+                approve_time = #{approveTime},
+            </if>
+        </trim>
+        <where>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sales_number = #{salesNumber}
+            </if>
+            <if test="id != null  and id != ''">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="deleteSalesOrderManageById" parameterType="Long">
+        update sales_order_manage set `status` = '-1' where id = #{id}
+    </update>
+
+    <delete id="deleteOrderDetailsBySalesNumber" parameterType="String">
+        delete from sales_order_manage_details where sales_number = #{salesNumber}
+    </delete>
+
+    <delete id="deleteOrderGatheringBySalesNumber" parameterType="String">
+        delete from sales_order_manage_gathering where sales_number = #{salesNumber}
+    </delete>
+
+    <select id="getMaxSalesCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(sales_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_manage
+        WHERE sales_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+</mapper>

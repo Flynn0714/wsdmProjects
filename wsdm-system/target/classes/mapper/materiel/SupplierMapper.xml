@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.SupplierMapper">
+
+    <resultMap type="Supplier" id="SupplierResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="supplierType" column="supplier_type"/>
+        <result property="supplierLevel" column="supplier_level"/>
+        <result property="supplierCredit" column="supplier_credit"/>
+        <result property="contacts" column="contacts"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="supplierEmail" column="supplier_email"/>
+        <result property="supplierFax" column="supplier_fax"/>
+        <result property="address" column="address"/>
+        <result property="status" column="status"/>
+        <result property="supplierRemark" column="supplier_remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSupplierVo">
+        select
+            ws.id,
+            ws.supplier_code,
+            ws.supplier_name,
+            ws.supplier_type,
+            sdd.dict_label AS supplierTypeName,
+            ws.supplier_level,
+            sdd1.dict_label AS supplierLevelName,
+            ws.supplier_credit,
+            ws.contacts,
+            ws.contact_number,
+            ws.supplier_email,
+            ws.supplier_fax,
+            ws.address,
+            ws.status,
+            case ws.status when 1 then '已删除'
+            when 0 then '正常'
+            else ''
+            end AS statusName,
+            ws.supplier_remark,
+            u1.nick_name AS create_by,
+            u2.nick_name AS update_by,
+            ws.create_time,
+            ws.update_time
+        from wl_supplier ws
+        left join sys_dict_data sdd on ws.supplier_type = sdd.dict_value and sdd.dict_type = 'dict_purchase_type'
+        left join sys_dict_data sdd1 on ws.supplier_level = sdd1.dict_value and sdd1.dict_type = 'dict_supplier_level'
+        left join sys_user u1 on u1.user_name = ws.create_by
+        left join sys_user u2 on u2.user_name = ws.update_by
+    </sql>
+
+    <select id="selectSupplierList" parameterType="Supplier" resultMap="SupplierResult">
+        <include refid="selectSupplierVo"/>
+        <where>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and ws.supplier_code like concat('%', #{supplierCode}, '%')
+            </if>
+            <if test="supplierName != null  and supplierName != ''">
+                and ws.supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="supplierType != null  and supplierType != ''">
+                and ws.supplier_type = #{supplierType}
+            </if>
+            <if test="supplierLevel != null  and supplierLevel != ''">
+                and ws.supplier_level = #{supplierLevel}
+            </if>
+            <if test="contacts != null  and contacts != ''">
+                and ws.contacts like concat('%', #{contacts}, '%')
+            </if>
+            <if test="contactNumber != null  and contactNumber != ''">
+                and ws.contact_number like concat('%', #{contactNumber}, '%')
+            </if>
+            <if test="supplierEmail != null  and supplierEmail != ''">
+                and ws.supplier_email = #{supplierEmail}
+            </if>
+            <if test="supplierFax != null  and supplierFax != ''">
+                and ws.supplier_fax = #{supplierFax}
+            </if>
+            <if test="status != null  and status != ''">
+                and ws.status = #{status}
+            </if>
+        </where>
+        ORDER BY ws.supplier_code desc
+    </select>
+
+    <select id="selectSupplierById" parameterType="Long" resultMap="SupplierResult">
+        <include refid="selectSupplierVo"/>
+        where ws.id = #{id}
+    </select>
+
+    <insert id="insertSupplier" parameterType="Supplier" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_supplier
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="supplierName != null">supplier_name,
+            </if>
+            <if test="supplierType != null">supplier_type,
+            </if>
+            <if test="supplierLevel != null">supplier_level,
+            </if>
+            <if test="contacts != null">contacts,
+            </if>
+            <if test="contactNumber != null">contact_number,
+            </if>
+            <if test="supplierEmail != null">supplier_email,
+            </if>
+            <if test="supplierFax != null">supplier_fax,
+            </if>
+            <if test="address != null">address,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="supplierRemark != null">supplier_remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="supplierName != null">#{supplierName},
+            </if>
+            <if test="supplierType != null">#{supplierType},
+            </if>
+            <if test="supplierLevel != null">#{supplierLevel},
+            </if>
+            <if test="contacts != null">#{contacts},
+            </if>
+            <if test="contactNumber != null">#{contactNumber},
+            </if>
+            <if test="supplierEmail != null">#{supplierEmail},
+            </if>
+            <if test="supplierFax != null">#{supplierFax},
+            </if>
+            <if test="address != null">#{address},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="supplierRemark != null">#{supplierRemark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSupplier" parameterType="Supplier">
+        update wl_supplier
+        set
+            supplier_name = #{supplierName},
+            supplier_type = #{supplierType},
+            supplier_level = #{supplierLevel},
+            contacts = #{contacts},
+            contact_number = #{contactNumber},
+            supplier_email = #{supplierEmail},
+            supplier_fax = #{supplierFax},
+            address = #{address},
+            supplier_remark = #{supplierRemark},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierById" parameterType="Long">
+        update wl_supplier set status = '1'
+        where id = #{id}
+    </update>
+
+    <update id="recovery" parameterType="Long">
+        update wl_supplier set status = '0'
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierByIds" parameterType="String">
+        update wl_supplier set status = '1'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxSupplierCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(supplier_code, #{code}, '')+0)) maxCode FROM wl_supplier WHERE supplier_code REGEXP CONCAT(#{code},'[0-9]*$')
+    </select>
+
+</mapper>

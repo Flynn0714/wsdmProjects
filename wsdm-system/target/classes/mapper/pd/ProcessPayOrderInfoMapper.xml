@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.ProcessPayOrderInfoMapper">
+
+    <resultMap type="ProcessPayOrderInfo" id="ProcessPayOrderResult">
+        <result property="id" column="id"/>
+        <result property="processDept" column="process_dept"/>
+        <result property="processEmployee" column="process_employee"/>
+        <result property="payableAmount" column="payable_amount"/>
+        <result property="totalPayAmount" column="total_pay_amount"/>
+        <result property="totalTransAmount" column="total_transaction_amount"/>
+        <result property="lastPayBy" column="last_payer"/>
+        <result property="lastTransTime" column="last_trading_time"/>
+        <result property="lastPayTime" column="last_pay_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="ProcessPayOrderInfo" id="ProcessPayOrderVoResult">
+        <id property="id" column="id"/>
+        <result property="processDept" column="process_dept"/>
+        <result property="processEmployee" column="process_employee"/>
+        <result property="payableAmount" column="payable_amount"/>
+        <result property="totalPayAmount" column="total_pay_amount"/>
+        <result property="totalTransAmount" column="total_transaction_amount"/>
+        <result property="lastPayBy" column="last_payer"/>
+        <result property="lastTransTime" column="last_trading_time"/>
+        <result property="lastPayTime" column="last_pay_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <collection property="payOrderDetails" ofType="ProcessPayOrderDetail">
+            <id property="id" column="ppd_id"/>
+            <result property="pid" column="p_id"/>
+            <result property="payDate" column="pay_date"/>
+            <result property="employee" column="employee"/>
+            <result property="processDept" column="process_dept"/>
+            <result property="payWay" column="pay_way"/>
+            <result property="wayName" column="wayName"/>
+            <result property="payBank" column="pay_bank"/>
+            <result property="bankName" column="bankName"/>
+            <result property="payAccount" column="pay_account"/>
+            <result property="payAmount" column="pay_amount"/>
+            <result property="remark" column="remark"/>
+            <result property="createBy" column="createBy"/>
+            <result property="createTime" column="createTime"/>
+            <result property="updateBy" column="update_by"/>
+            <result property="updateTime" column="update_time"/>
+        </collection>
+        <collection property="pdContributions" ofType="PdContribution">
+            <id property="id" column="pc_id"/>
+            <result property="processTime" column="process_time"/>
+            <result property="deptCode" column="dept_code"/>
+            <result property="deptName" column="dept_name"/>
+            <result property="code" column="code"/>
+        </collection>
+    </resultMap>
+
+    <sql id="selectList">
+          select
+        ppo.id,
+        ppo.process_dept,
+        sdd.dict_label as deptName,
+        ppo.process_employee,
+        ppo.payable_amount,
+        ppo.total_pay_amount,
+        ppo.total_transaction_amount,
+        ppo.last_payer,
+        ppo.last_trading_time,
+        ppo.last_pay_time,
+        ppo.create_by,
+        ppo.create_time,
+        ppo.update_by,
+        ppo.update_time
+    from process_pay_order_info ppo
+    left join sys_dict_data sdd on ppo.process_dept = sdd.dict_value and sdd.dict_type='workshop_dept'
+    </sql>
+
+    <sql id="selectProcessIdVo">
+       SELECT
+            ppo.id,
+            ppo.process_dept,
+            sdd.dict_label AS deptName,
+            ppo.process_employee,
+            ppo.payable_amount,
+            ppo.total_pay_amount,
+            ppo.total_transaction_amount,
+            ppo.last_payer,
+            ppo.last_trading_time,
+            ppo.last_pay_time,
+            ppo.create_by,
+            ppo.create_time,
+            ppo.update_by,
+            ppo.update_time,
+            pc.id pc_id,
+            pc.process_time,
+            pc.dept_code,
+            pc.dept_name,
+            pc.`code` ,
+            ppd.id ppd_id,
+            ppd.p_id,
+            ppd.employee,
+            ppd.pay_way,
+            ppd.create_by createBy,
+            ppd.create_time createTime,
+            sdd3.dict_label AS wayName,
+            ppd.pay_bank,
+            sdd4.dict_label AS bankName,
+            ppd.pay_account,
+            ppd.pay_amount,
+            ppd.remark,
+            ppd.pay_date
+
+        FROM
+	process_pay_order_info ppo
+	left join pd_contribution pc on ppo.process_employee = pc.employee_name
+    left join process_pay_order_detail ppd on ppd.p_id = ppo.id
+	left JOIN sys_dict_data sdd ON ppo.process_dept = sdd.dict_value
+	AND sdd.dict_type = 'workshop_dept'
+	LEFT JOIN sys_dict_data sdd3 ON ppd.pay_way = sdd3.dict_value
+	AND sdd3.dict_type = 'dict_pay_way'
+	LEFT JOIN sys_dict_data sdd4 ON ppd.pay_bank = sdd4.dict_value
+	AND sdd4.dict_type = 'dict_pay_bank'
+    </sql>
+
+
+    <select id="selectListByOrder" resultMap="ProcessPayOrderResult" parameterType="ProcessPayOrderVo">
+        <include refid="selectList"/>
+        <where>
+            <if test="processDept != null">
+                ppo.process_dept = #{processDept}
+            </if>
+            <if test="processEmployee != null">
+                and ppo.process_employee= #{processEmployee}
+            </if>
+        </where>
+        order by ppo.process_dept desc
+    </select>
+
+    <insert id="add" parameterType="ProcessPayOrderInfo">
+        insert into process_pay_order_info
+        (
+        id,
+        process_dept,
+        process_employee,
+        payable_amount,
+        total_pay_amount,
+        total_transaction_amount,
+        last_trading_time,
+        last_pay_time,
+        create_by,
+        create_time
+        )
+        values
+        (
+        #{id},
+        #{processDept},
+        #{processEmployee},
+        #{payableAmount},
+        #{totalPayAmount},
+        #{totalTransAmount},
+        #{lastTransTime},
+        #{lastPayTime},
+        #{createBy},
+        #{createTime}
+        )
+    </insert>
+
+    <update id="updateByPayInfo" parameterType="ProcessPayOrderInfo">
+        update process_pay_order_info
+        set
+        <if test="totalTransAmount != null">
+        total_transaction_amount= #{totalTransAmount},
+        </if>
+        <if test="lastTransTime  != null">
+        last_trading_time = #{lastTransTime},
+        </if>
+        <if test="lastPayTime != null">
+        last_pay_time = #{lastPayTime},
+        </if>
+        <if test="lastPayBy != null">
+        last_payer = #{lastPayBy},
+        </if>
+        <if test="totalPayAmount != null">
+            total_pay_amount = #{totalPayAmount},
+        </if>
+        payable_amount = #{payableAmount}
+        where process_employee=#{processEmployee}
+    </update>
+
+    <select id="selectById" resultMap="ProcessPayOrderVoResult" parameterType="Long">
+        <include refid="selectProcessIdVo"/>
+        where ppo.id=#{id}
+--             and (ppd.pay_date>DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+--             or  pc.process_time >DATE_SUB(CURDATE(), INTERVAL 3 MONTH))
+        order by ppo.process_dept desc,ppd.pay_date desc,pc.process_time desc
+    </select>
+
+    <select id="selectByName" resultMap="ProcessPayOrderResult" parameterType="ProcessPayOrderVo">
+        <include refid="selectList"/>
+        where ppo.process_employee=#{processEmployee}
+    </select>
+
+
+</mapper>

@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderTransactionDetailsMapper">
+
+    <resultMap type="SalesOrderTransactionDetails" id="SalesOrderTransactionDetailsResult">
+        <result property="id" column="id"/>
+        <result property="customer" column="customer"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="transactionNumber" column="transaction_number"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="quantity" column="quantity"/>
+        <result property="price" column="price"/>
+        <result property="amount" column="amount"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="transactionTime" column="transactionTime"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderTransactionDetails" id="SalesOrderTransactionDetailsResultTwo">
+        <result property="customer" column="customer"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="transactionNumber" column="transaction_number"/>
+        <result property="amount" column="amount"/>
+        <result property="transactionTime" column="transactionTime"/>
+        <result property="customerName" column="customerName"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderTransactionDetailsVo">
+        select id,
+               customer,
+               transaction_type,
+               transaction_number,
+               material_number,
+               quantity,
+               price,
+               amount,
+               transaction_date,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sales_order_transaction_details
+    </sql>
+
+    <select id="selectSalesOrderTransactionDetailsListTwo" parameterType="SalesOrderTransactionQuery"
+            resultMap="SalesOrderTransactionDetailsResultTwo">
+        SELECT
+        sotd.customer,
+        CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+        sotd.transaction_type,
+        sotd.transaction_number,
+        sum(sotd.amount) amount,
+        max(sotd.transaction_date) transactionTime
+        FROM sales_order_transaction_details sotd
+        LEFT JOIN sales_order_customer c ON sotd.customer = c.customer_number
+        LEFT JOIN materials_sales_view v ON v.number = sotd.material_number
+        <where>
+            <if test="customer != null  and customer != ''">
+                and sotd.customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+
+            <if test="transactionType != null  and transactionType != ''">
+                and sotd.transaction_type = #{transactionType}
+            </if>
+
+            <if test="transactionNumber != null  and transactionNumber != ''">
+                and sotd.transaction_number like concat('%', #{transactionNumber}, '%')
+            </if>
+
+            <if test="materialNumber != null  and materialNumber != ''">
+                and sotd.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+
+            <if test="materialName != null  and materialName != ''">
+                and v.name like concat('%', #{materialName}, '%')
+            </if>
+
+            <if test="transactionDateStart != null and transactionDateEnd != null">
+                and sotd.transaction_date BETWEEN #{transactionDateStart} AND #{transactionDateEnd}
+            </if>
+        </where>
+        group by  sotd.transaction_number,sotd.customer,c.customer_name, sotd.transaction_type
+        ORDER BY transactionTime DESC
+    </select>
+    <select id="selectSalesOrderTransactionDetailsList" parameterType="SalesOrderTransactionQuery"
+            resultMap="SalesOrderTransactionDetailsResult">
+        SELECT
+        sotd.id,
+        sotd.customer,
+        CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+        sotd.transaction_type,
+        sotd.transaction_number,
+        sotd.material_number,
+        v.`name` AS materialName,
+        pa.specs ,
+        sotd.quantity,
+        sotd.price,
+        sotd.amount,
+        sotd.transaction_date,
+        sotd.transaction_date AS transactionTime
+        FROM sales_order_transaction_details sotd
+        LEFT JOIN sales_order_customer c ON sotd.customer = c.customer_number
+        LEFT JOIN materials_sales_view v ON v.number = sotd.material_number
+        left join pd_association pa on pa.material_number  = sotd.material_number
+        <where>
+            <if test="customer != null  and customer != ''">
+                and sotd.customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+
+            <if test="transactionType != null  and transactionType != ''">
+                and sotd.transaction_type = #{transactionType}
+            </if>
+
+            <if test="transactionNumber != null  and transactionNumber != ''">
+                and sotd.transaction_number like concat('%', #{transactionNumber}, '%')
+            </if>
+
+            <if test="materialNumber != null  and materialNumber != ''">
+                and sotd.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+
+            <if test="materialName != null  and materialName != ''">
+                and v.name like concat('%', #{materialName}, '%')
+            </if>
+
+            <if test="transactionDateStart != null and transactionDateEnd != null">
+                and sotd.transaction_date BETWEEN #{transactionDateStart} AND #{transactionDateEnd}
+            </if>
+        </where>
+        ORDER BY sotd.transaction_date DESC
+    </select>
+    <select id="getTransactionQuantity" parameterType="SalesOrderTransactionQuery" resultType="BigDecimal">
+        SELECT sum(sotd.quantity)
+        FROM sales_order_transaction_details sotd
+        LEFT JOIN sales_order_customer c ON sotd.customer = c.customer_number
+        LEFT JOIN materials_sales_view v ON v.number = sotd.material_number
+        <where>
+            <if test="customer != null  and customer != ''">
+                and sotd.customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+
+            <if test="transactionType != null  and transactionType != ''">
+                and sotd.transaction_type = #{transactionType}
+            </if>
+
+            <if test="transactionNumber != null  and transactionNumber != ''">
+                and sotd.transaction_number like concat('%', #{transactionNumber}, '%')
+            </if>
+
+            <if test="materialNumber != null  and materialNumber != ''">
+                and sotd.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+
+            <if test="materialName != null  and materialName != ''">
+                and v.name like concat('%', #{materialName}, '%')
+            </if>
+
+            <if test="transactionDateStart != null and transactionDateEnd != null">
+                and sotd.transaction_date BETWEEN #{transactionDateStart} AND #{transactionDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="getTransactionAmount" parameterType="SalesOrderTransactionQuery" resultType="BigDecimal">
+        SELECT sum(sotd.amount)
+        FROM sales_order_transaction_details sotd
+        LEFT JOIN sales_order_customer c ON sotd.customer = c.customer_number
+        LEFT JOIN materials_sales_view v ON v.number = sotd.material_number
+        <where>
+            <if test="customer != null  and customer != ''">
+                and sotd.customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+
+            <if test="transactionType != null  and transactionType != ''">
+                and sotd.transaction_type = #{transactionType}
+            </if>
+
+            <if test="transactionNumber != null  and transactionNumber != ''">
+                and sotd.transaction_number like concat('%', #{transactionNumber}, '%')
+            </if>
+
+            <if test="materialNumber != null  and materialNumber != ''">
+                and sotd.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+
+            <if test="materialName != null  and materialName != ''">
+                and v.name like concat('%', #{materialName}, '%')
+            </if>
+
+            <if test="transactionDateStart != null and transactionDateEnd != null">
+                and sotd.transaction_date BETWEEN #{transactionDateStart} AND #{transactionDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSalesOrderTransactionDetailsById" parameterType="Long"
+            resultMap="SalesOrderTransactionDetailsResult">
+        <include refid="selectSalesOrderTransactionDetailsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSalesOrderTransactionDetails" parameterType="SalesOrderTransactionDetails" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_transaction_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customer != null">customer,
+            </if>
+            <if test="transactionType != null">transaction_type,
+            </if>
+            <if test="transactionNumber != null">transaction_number,
+            </if>
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="quantity != null">quantity,
+            </if>
+            <if test="price != null">price,
+            </if>
+            <if test="amount != null">amount,
+            </if>
+            <if test="transactionDate != null">transaction_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="transactionType != null">#{transactionType},
+            </if>
+            <if test="transactionNumber != null">#{transactionNumber},
+            </if>
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="quantity != null">#{quantity},
+            </if>
+            <if test="price != null">#{price},
+            </if>
+            <if test="amount != null">#{amount},
+            </if>
+            <if test="transactionDate != null">#{transactionDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertSalesOrderTransactionDetailsBatch" parameterType="SalesOrderTransactionDetails" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_transaction_details(customer, transaction_type, transaction_number, material_number,
+        quantity, price,amount, transaction_date, remark, create_by, create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+          (#{item.customer}, #{item.transactionType}, #{item.transactionNumber}, #{item.materialNumber}, #{item.quantity},
+           #{item.price}, #{item.amount}, #{item.transactionDate}, #{item.remark}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateSalesOrderTransactionDetails" parameterType="SalesOrderTransactionDetails">
+        update sales_order_transaction_details
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customer != null">customer =
+                #{customer},
+            </if>
+            <if test="transactionType != null">transaction_type =
+                #{transactionType},
+            </if>
+            <if test="transactionNumber != null">transaction_number =
+                #{transactionNumber},
+            </if>
+            <if test="materialNumber != null">material_number =
+                #{materialNumber},
+            </if>
+            <if test="quantity != null">quantity =
+                #{quantity},
+            </if>
+            <if test="price != null">price =
+                #{price},
+            </if>
+            <if test="amount != null">amount =
+                #{amount},
+            </if>
+            <if test="transactionDate != null">transaction_date =
+                #{transactionDate},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSalesOrderTransactionDetailsById" parameterType="Long">
+        delete
+        from sales_order_transaction_details
+        where id
+            =
+              #{id}
+    </delete>
+
+    <delete id="deleteSalesOrderTransactionDetailsByIds" parameterType="String">
+        delete from sales_order_transaction_details where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

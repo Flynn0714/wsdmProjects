@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.SupplierContractMapper">
+
+    <resultMap type="SupplierContract" id="SupplierContractResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="contractType" column="contract_type"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="contractStatus" column="contract_status"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="SupplierContractVo" id="SupplierContractVoResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="contractType" column="contract_type"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="contractStatus" column="contract_status"/>
+        <result property="auditStatus" column="audit_status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSupplierContractVo">
+        select
+            psc.id,
+            psc.supplier_code,
+            ps.supplier_name AS supplierName,
+            psc.contract_number,
+            psc.contract_type,
+            sdd1.dict_label AS contractTypeName,
+            psc.contract_start_date,
+            psc.contract_end_date,
+            psc.audit_status,
+            sdd3.dict_label AS auditStatusName,
+            psc.audit_time,
+            psc.remark,
+            u1.nick_name AS create_by,
+            u3.nick_name AS audit_by,
+            u2.nick_name AS update_by,
+            psc.update_time,
+            psc.create_time,
+            psc.update_time
+        from purchase_supplier_contract_info psc
+        left join wl_supplier ps on psc.supplier_code = ps.supplier_code
+        left join sys_dict_data sdd1 on psc.contract_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+        left join sys_dict_data sdd3 on psc.audit_status = sdd3.dict_value and sdd3.dict_type = 'dict_contract_audit_status'
+        left join sys_user u1 on u1.user_name = psc.create_by
+        left join sys_user u2 on u2.user_name = psc.update_by
+        left join sys_user u3 on u3.user_name = psc.audit_by
+    </sql>
+
+    <select id="queryPurchaseMaterielList" parameterType="Map" resultType="Map">
+        SELECT
+        pscd.contract_number AS contractNumber,
+        pscd.material_number AS materialNumber,
+        pscd.material_name AS materialName,
+        pscd.model_param AS modelParam,
+        pscd.price
+        FROM
+        purchase_supplier_contract_detail pscd
+        LEFT JOIN purchase_supplier_contract_info psci ON psci.contract_number = pscd.contract_number
+        where
+            psci.audit_status = '2'
+            <if test="supplierCode != null and supplierCode != ''">
+                and psci.supplier_code = #{supplierCode}
+            </if>
+            <if test="purchaseType != null and purchaseType != ''">
+                and psci.contract_type = #{purchaseType}
+            </if>
+            <if test="materialNumber != null and materialNumber != ''">
+                and pscd.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+            <if test="materialName != null and materialName != ''">
+                and pscd.material_name like concat('%', #{materialName}, '%')
+            </if>
+            and date_format(psci.contract_start_date,'%Y-%m-%d 00:00:01') &lt;= now()
+            and date_format(psci.contract_end_date,'%Y-%m-%d 23:59:59') &gt;= now()
+        ORDER BY psci.contract_number DESC
+    </select>
+
+    <select id="queryListForAutoPurchase" parameterType="Map" resultType="Map">
+        SELECT
+        psci.supplier_code AS supplierCode,
+        ps.supplier_name AS supplierName,
+        pscd.contract_number AS contractNumber,
+        pscd.material_number AS materialNumber,
+        pscd.material_name AS materialName,
+        pscd.model_param AS modelParam,
+        pscd.price
+        FROM
+        purchase_supplier_contract_info psci
+        LEFT JOIN  purchase_supplier_contract_detail pscd ON psci.contract_number = pscd.contract_number
+        left join wl_supplier ps on psci.supplier_code = ps.supplier_code
+        where
+            psci.audit_status = '2'
+            <if test="supplierCode != null and supplierCode != ''">
+                and psci.supplier_code = #{supplierCode}
+            </if>
+            <if test="materialNumber != null and materialNumber != ''">
+                and pscd.material_number = #{materialNumber}
+            </if>
+            and date_format(psci.contract_start_date,'%Y-%m-%d 00:00:01') &lt;= now()
+            and date_format(psci.contract_end_date,'%Y-%m-%d 23:59:59') &gt;= now()
+        ORDER BY psci.contract_number DESC
+    </select>
+
+    <select id="selectSupplierContractList" parameterType="SupplierContract" resultMap="SupplierContractResult">
+        <include refid="selectSupplierContractVo"/>
+        <where>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and psc.supplier_code = #{supplierCode}
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and psc.contract_number = #{contractNumber}
+            </if>
+            <if test="contractType != null  and contractType != ''">
+                and psc.contract_type = #{contractType}
+            </if>
+            <if test="auditStatus != null  and auditStatus != ''">
+                and psc.audit_status = #{auditStatus}
+            </if>
+            <if test="contractEffectiveDate != null">
+                and psc.contract_start_date &lt;= #{contractEffectiveDate} and contract_end_date &gt;= #{contractEffectiveDate}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(psc.audit_time, '%Y-%m-%d') &gt;= date_format(#{beginTime},'%Y-%m-%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(psc.audit_time,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        ORDER BY psc.contract_number DESC
+    </select>
+
+    <select id="selectSupplierContractVoList" parameterType="SupplierContractVo" resultMap="SupplierContractVoResult">
+        <include refid="selectSupplierContractVo"/>
+        <where>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and psc.supplier_code = #{supplierCode}
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and psc.contract_number like concat('%', #{contractNumber}, '%')
+            </if>
+            <if test="contractType != null  and contractType != ''">
+                and psc.contract_type = #{contractType}
+            </if>
+            <if test="auditStatus != null  and auditStatus != ''">
+                and psc.audit_status = #{auditStatus}
+            </if>
+            <if test="contractEffectiveDate != null">
+                and psc.contract_start_date &lt;= #{contractEffectiveDate} and contract_end_date &gt;= #{contractEffectiveDate}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(psc.audit_time, '%Y-%m-%d') &gt;= date_format(#{beginTime},'%Y-%m-%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(psc.audit_time,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        ORDER BY psc.contract_number DESC
+    </select>
+
+    <select id="selectOverdueSupplierContractList" parameterType="SupplierContract" resultMap="SupplierContractResult">
+        <include refid="selectSupplierContractVo"/>
+        <where>
+            <if test="contractStatus != null  and contractStatus != ''">
+                and psc.contract_status = #{contractStatus}
+            </if>
+            <if test="auditStatus != null  and auditStatus != ''">
+                and psc.audit_status = #{auditStatus}
+            </if>
+            <if test="contractEffectiveDate != null">
+                and psc.contract_end_date &lt; #{contractEffectiveDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSupplierContractById" parameterType="Long" resultMap="SupplierContractVoResult">
+        <include refid="selectSupplierContractVo"/>
+        where psc.id = #{id}
+    </select>
+
+    <insert id="insertSupplierContract" parameterType="SupplierContract" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into purchase_supplier_contract_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="contractType != null">contract_type,
+            </if>
+            <if test="contractStartDate != null">contract_start_date,
+            </if>
+            <if test="contractEndDate != null">contract_end_date,
+            </if>
+            <if test="auditStatus != null">audit_status,
+            </if>
+            <if test="auditTime != null">audit_time,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="auditBy != null">audit_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="contractType != null">#{contractType},
+            </if>
+            <if test="contractStartDate != null">#{contractStartDate},
+            </if>
+            <if test="contractEndDate != null">#{contractEndDate},
+            </if>
+            <if test="auditStatus != null">#{auditStatus},
+            </if>
+            <if test="auditTime != null">#{auditTime},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="auditBy != null">#{auditBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSupplierContract" parameterType="SupplierContract">
+        update purchase_supplier_contract_info
+        set
+            supplier_code = #{supplierCode},
+            contract_type = #{contractType},
+            contract_start_date = #{contractStartDate},
+            contract_end_date = #{contractEndDate},
+            audit_status = #{auditStatus},
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            remark = #{remark}
+        where id = #{id}
+    </update>
+
+    <update id="updateSupplierContractChange" parameterType="SupplierContract">
+        update purchase_supplier_contract_info
+        set
+            contract_end_date = #{contractEndDate}
+        where contract_number = #{contractNumber}
+    </update>
+
+    <update id="updateContractStatusBatch" parameterType="SupplierContract">
+        update purchase_supplier_contract_info
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="contract_status =case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.contractStatus}
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateAuditStatus" parameterType="SupplierContract">
+        update purchase_supplier_contract_info
+        set
+            audit_status = #{auditStatus},
+            audit_by = #{auditBy},
+            audit_time = #{auditTime}
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierContractById" parameterType="Long">
+        update purchase_supplier_contract_info set audit_status = '3'
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierContractByIds" parameterType="String">
+        update purchase_supplier_contract_info set audit_status = '3',contract_status='0'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxSupplierContractNumber" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(contract_number, #{prefix}, '')+0)) maxCode FROM purchase_supplier_contract_info WHERE contract_number REGEXP CONCAT(#{prefix},'[0-9]*$')
+    </select>
+
+</mapper>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderCustomerMapper">
+
+    <resultMap type="SalesOrderCustomer" id="SalesOrderCustomerResult">
+        <result property="id" column="id"/>
+        <result property="customerNumber" column="customer_number"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="level" column="level"/>
+        <result property="linkman" column="linkman"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <result property="email" column="email"/>
+        <result property="fax" column="fax"/>
+        <result property="salespersonName" column="salespersonName"/>
+        <result property="salesperson" column="salesperson"/>
+        <result property="status" column="status"/>
+        <result property="remarks" column="remarks"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderCustomerVo">
+        SELECT
+            soc.id,
+            soc.customer_number,
+            soc.customer_name,
+            soc.`level`,
+            soc.linkman,
+            soc.phone,
+            soc.address,
+            soc.email,
+            soc.fax,
+            soc.salesperson,
+            u1.nick_name AS salespersonName,
+            soc.`status`,
+            soc.remarks,
+            u2.nick_name AS create_by,
+            soc.create_time,
+            u3.nick_name AS update_by,
+            soc.update_time
+        FROM sales_order_customer soc
+        LEFT JOIN sys_user u1 on soc.salesperson = u1.user_name
+        LEFT JOIN sys_user u2 on soc.create_by = u2.user_name
+        LEFT JOIN sys_user u3 on soc.update_by = u3.user_name
+    </sql>
+
+    <select id="selectSalesOrderCustomerList" parameterType="SalesOrderCustomer" resultMap="SalesOrderCustomerResult">
+        <include refid="selectSalesOrderCustomerVo"/>
+        <where>
+            <if test="customerNumber != null  and customerNumber != ''">
+                and soc.customer_number like concat('%',#{customerNumber},'%')
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and soc.customer_name like concat('%', #{customerName}, '%')
+            </if>
+            <if test="level != null  and level != ''">
+                and soc.`level` = #{level}
+            </if>
+            <if test="linkman != null  and linkman != ''">
+                and soc.linkman like concat('%',#{linkman},'%')
+            </if>
+            <if test="phone != null  and phone != ''">
+                and soc.hone like concat('%',#{phone},'%')
+            </if>
+            <if test="email != null  and email != ''">
+                and soc.email = #{email}
+            </if>
+            <if test="fax != null  and fax != ''">
+                and soc.fax = #{fax}
+            </if>
+            <if test="salesperson != null  and salesperson != ''">
+                and soc.salesperson like concat('%',#{salesperson},'%')
+            </if>
+            <if test="status != null  and status != ''">
+                and soc.`status` = #{status}
+            </if>
+            <if test="remarks != null  and remarks != ''">
+                and soc.remarks = #{remarks}
+            </if>
+        </where>
+        order by soc.create_time desc
+    </select>
+    <select id="queryCustomerList" parameterType="String" resultType="Map">
+        select  customer_number AS number,
+        concat(customer_number ,'.',customer_name) AS name
+        from sales_order_customer
+        <where>
+            <if test="status != null and status !=''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSalesOrderCustomerById" parameterType="Long" resultMap="SalesOrderCustomerResult">
+        <include refid="selectSalesOrderCustomerVo"/>
+        where soc.id = #{id}
+    </select>
+
+    <select id="selectSalesOrderCustomerByCustomerNumber" parameterType="String" resultMap="SalesOrderCustomerResult">
+        <include refid="selectSalesOrderCustomerVo"/>
+        where soc.customer_number = #{customerNumber}
+    </select>
+
+    <insert id="insertSalesOrderCustomer" parameterType="SalesOrderCustomer" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_customer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerNumber != null">customer_number,
+            </if>
+            <if test="customerName != null">customer_name,
+            </if>
+            <if test="level != null">level,
+            </if>
+            <if test="linkman != null">linkman,
+            </if>
+            <if test="phone != null">phone,
+            </if>
+            <if test="address != null">address,
+            </if>
+            <if test="email != null">email,
+            </if>
+            <if test="fax != null">fax,
+            </if>
+            <if test="salesperson != null">salesperson,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="remarks != null">remarks,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerNumber != null">#{customerNumber},
+            </if>
+            <if test="customerName != null">#{customerName},
+            </if>
+            <if test="level != null">#{level},
+            </if>
+            <if test="linkman != null">#{linkman},
+            </if>
+            <if test="phone != null">#{phone},
+            </if>
+            <if test="address != null">#{address},
+            </if>
+            <if test="email != null">#{email},
+            </if>
+            <if test="fax != null">#{fax},
+            </if>
+            <if test="salesperson != null">#{salesperson},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="remarks != null">#{remarks},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesOrderCustomer" parameterType="SalesOrderCustomer">
+        update sales_order_customer
+        <trim prefix="SET" suffixOverrides=",">
+            customer_number = #{customerNumber},
+            customer_name = #{customerName},
+            `level` = #{level},
+            linkman = #{linkman},
+            phone = #{phone},
+            address = #{address},
+            email = #{email},
+            fax = #{fax},
+            salesperson = #{salesperson},
+            remarks = #{remarks},
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="remarks != null">
+                remarks = #{remarks},
+            </if>
+            <if test="createBy != null">
+                create_by = #{createBy},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteSalesOrderCustomerById" parameterType="Long">
+        update wl_supplier
+        set status = '1'
+        where id = #{id}
+    </update>
+
+    <update id="deleteSalesOrderCustomerByIds" parameterType="String">
+        update sales_order_customer set status = '1' where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxCustomerCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(customer_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_customer
+        WHERE customer_number REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+</mapper>

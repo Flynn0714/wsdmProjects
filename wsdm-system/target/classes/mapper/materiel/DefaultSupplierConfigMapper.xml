@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.DefaultSupplierConfigMapper">
+
+    <resultMap type="DefaultSupplierConfig" id="DefaultSupplierConfigResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplier_name"/>
+        <result property="purchaseCategoryName" column="purchase_category_name"/>
+        <result property="purchaseCategoryId" column="purchase_category_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectDefaultSupplierConfigVo">
+        select id,
+        supplier_code,
+        supplier_name,
+        purchase_category_name,
+        purchase_category_id,
+        create_by,
+        create_time,
+        update_by,
+        update_time
+        from wl_default_supplier_config
+    </sql>
+
+    <select id="selectDefaultSupplierConfigList" parameterType="DefaultSupplierConfig"
+            resultMap="DefaultSupplierConfigResult">
+        <include refid="selectDefaultSupplierConfigVo"/>
+        <where>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and supplier_code = #{supplierCode}
+            </if>
+            <if test="supplierName != null  and supplierName != ''">
+                and supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="purchaseCategoryName != null  and purchaseCategoryName != ''">
+                and purchase_category_name like concat('%', #{purchaseCategoryName}, '%')
+            </if>
+            <if test="purchaseCategoryId != null  and purchaseCategoryId != ''">
+                and purchase_category_id = #{purchaseCategoryId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDefaultSupplierConfig" parameterType="String" resultMap="DefaultSupplierConfigResult">
+        <include refid="selectDefaultSupplierConfigVo"/> where supplier_code = #{supplierCode}
+    </select>
+
+    <select id="selectDefaultSupplierConfigList2"
+            resultMap="DefaultSupplierConfigResult">
+        SELECT
+            b.id,
+            a.dict_value AS purchase_category_id,
+            a.dict_label AS purchase_category_name,
+            b.supplier_code,
+            c.supplier_name,
+            b.create_by,
+            b.create_time,
+            u.nick_name AS update_by,
+            b.update_time
+        FROM sys_dict_data a
+        LEFT JOIN `wl_default_supplier_config` b ON a.dict_value = b.purchase_category_id
+        LEFT JOIN wl_supplier c ON b.supplier_code = c.supplier_code
+        LEFT JOIN sys_user u ON u.user_name = b.update_by
+        WHERE a.dict_type = 'dict_purchase_type'
+    </select>
+
+    <select id="selectDefaultSupplierConfigById" parameterType="Long" resultMap="DefaultSupplierConfigResult">
+        <include refid="selectDefaultSupplierConfigVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertDefaultSupplierConfig" parameterType="DefaultSupplierConfig" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_default_supplier_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="supplierName != null">supplier_name,
+            </if>
+            <if test="purchaseCategoryName != null">purchase_category_name,
+            </if>
+            <if test="purchaseCategoryId != null">purchase_category_id,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="supplierName != null">#{supplierName},
+            </if>
+            <if test="purchaseCategoryName != null">#{purchaseCategoryName},
+            </if>
+            <if test="purchaseCategoryId != null">#{purchaseCategoryId},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateDefaultSupplierConfig" parameterType="DefaultSupplierConfig">
+        update wl_default_supplier_config SET
+            supplier_code = #{supplierCode},
+            supplier_name = #{supplierName},
+            purchase_category_name = #{purchaseCategoryName},
+            purchase_category_id = #{purchaseCategoryId},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDefaultSupplierConfigById" parameterType="Long">
+        delete
+        from wl_default_supplier_config
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteDefaultSupplierConfigByIds" parameterType="String">
+        delete from wl_default_supplier_config where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchaseReturnInfoMapper">
+
+    <resultMap type="PurchaseReturnInfo" id="PurchaseReturnInfoResult">
+        <result property="id" column="id"/>
+        <result property="returnNumber" column="return_number"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplierName"/>
+        <result property="contacts" column="contacts"/>
+        <result property="address" column="address"/>
+        <result property="contactsNumber" column="contact_number"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="purchaseTypeName" column="purchaseTypeName"/>
+        <result property="arrivalDate" column="arrivalDate"/>
+        <result property="returnDate" column="return_date"/>
+        <result property="receiveQuantity" column="receiveQuantity"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="approveBy" column="approve_by"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="PurchaseReturnInfoVo" id="PurchaseReturnInfoVoResult">
+        <result property="id" column="id"/>
+        <result property="returnNumber" column="return_number"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="supplierName" column="supplierName"/>
+        <result property="contacts" column="contacts"/>
+        <result property="address" column="address"/>
+        <result property="contactsNumber" column="contact_number"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="purchaseTypeName" column="purchaseTypeName"/>
+        <result property="returnDate" column="return_date"/>
+        <result property="receivedQuantity" column="receivedQuantity"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="approveBy" column="approve_by"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchaseReturnInfoVo">
+   select
+            wroi.id,
+            wroi.return_number,
+            wroi.receive_number,
+            wroi.supplier_code,
+            ps.supplier_name AS supplierName,
+            wroi.contacts,
+            wroi.address,
+            wroi.contact_number,
+            wroi.purchase_type,
+            sdd1.dict_label AS purchaseTypeName,
+            (select sum(receive_num) from wl_receive_order_detail where receive_number = wroi.receive_number) AS receiveQuantity,
+            (select sum(return_quantity) from wl_return_order_detail where return_number = wroi.return_number) AS returnQuantity,
+            wroi.return_date,
+            wroi2.arrival_date AS arrivalDate,
+            wroi.remark,
+            wroi.status,
+            case wroi.status
+            when 0 then '未提交'
+            when 1 then '未审核'
+            when 2 then '已审核'
+            when 3 then '已删除'
+            when 4 then '已作废'
+            else ''
+            end AS statusName,
+            u3.nick_name AS approve_by,
+            wroi.approve_time,
+            u1.nick_name AS create_by,
+            wroi.create_time,
+            u2.nick_name AS update_by,
+            wroi.update_time
+        from wl_return_order_info wroi
+            left join wl_supplier ps on wroi.supplier_code = ps.supplier_code
+            left join sys_dict_data sdd1 on wroi.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+            left join wl_receive_order_info wroi2 on wroi2.receive_number = wroi.receive_number
+            left join sys_user u1 on u1.user_name = wroi.create_by
+            left join sys_user u2 on u2.user_name = wroi.update_by
+            left join sys_user u3 on u3.user_name = wroi.approve_by
+    </sql>
+
+    <select id="selectPurchaseReturnInfoList" resultMap="PurchaseReturnInfoResult" parameterType="PurchaseReturnInfoVo">
+        <include refid="selectPurchaseReturnInfoVo"/>
+        <where>
+            <if test="returnNumber != null and returnNumber != ''">
+                and wroi.return_number like concat('%',#{returnNumber},'%')
+            </if>
+            <if test="receiveNumber != null and receiveNumber != ''">
+                and wroi.receive_number like concat('%',#{receiveNumber},'%')
+            </if>
+            <if test="supplierCode != null and supplierCode != ''">
+                and wroi.supplier_code like concat('%',#{supplierCode},'%')
+            </if>
+            <if test="purchaseType != null and purchaseType != ''">
+                and wroi.purchase_type = #{purchaseType}
+            </if>
+            <if test="contacts != null and contacts != ''">
+                and wroi.contacts = #{contacts}
+            </if>
+            <if test="address != null and address != ''">
+                and wroi.address = #{address}
+            </if>
+            <if test="contactsNumber != null and contactsNumber != ''">
+                and wroi.contact_number = #{wroi.contact_number}
+            </if>
+            <if test="status != null and status != ''">
+                and wroi.status = #{status}
+            </if>
+            <if test="returnStartDate != null">
+                and wroi.return_date &gt;= #{returnStartDate}
+            </if>
+            <if test="returnEndDate != null">
+                and wroi.return_date &lt;= #{returnEndDate}
+            </if>
+            <if test="receiveStartDate != null">
+                and wroi2.arrival_date &gt;= #{receiveStartDate}
+            </if>
+            <if test="receiveEndDate != null">
+                and wroi2.arrival_date &lt;= #{receiveEndDate}
+            </if>
+        </where>
+        ORDER BY wroi.return_number desc
+    </select>
+
+    <select id="selectPurchaseReturnForReceiveList" parameterType="PurchaseReturnInfo" resultMap="PurchaseReturnInfoResult">
+        select
+        a.id,
+        a.receive_number,
+        a.supplier_code,
+        sup.supplier_name as supplierName,
+        a.arrival_date as arrivalDate,
+        a.purchase_type,
+        sdd1.dict_label as purchaseTypeName,
+        a.total_receive_num as receiveQuantity
+        from wl_receive_order_info a
+        left join wl_supplier sup on a.supplier_code = sup.supplier_code
+        left join sys_dict_data sdd1 on a.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+        <where>
+            a.status = '3'
+        <if test="receiveNumber != null and receiveNumber !=''">
+            and a.receive_number like concat('%',#{receiveNumber},'%')
+        </if>
+        <if test="supplierCode != null and supplierCode != ''">
+            and a.supplier_code like concat('%',#{supplierCode},'%')
+        </if>
+        </where>
+        order by a.receive_number desc
+    </select>
+
+    <select id="getMaxReturnCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(return_number, #{prefix}, '') + 0)) maxCode
+        FROM wl_return_order_info
+        WHERE return_number REGEXP CONCAT(#{prefix}
+            ,'[0-9]*$')
+    </select>
+
+    <insert id="insertPurchaseReturnOrderInfo" parameterType="PurchaseReturnInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into
+            wl_return_order_info(
+            return_number,
+            receive_number,
+            supplier_code,
+            purchase_type,
+            return_date,
+            contacts,
+            contact_number,
+            status,
+            remark,
+            create_time,
+            create_by
+            )
+        values(
+            #{returnNumber},
+            #{receiveNumber},
+            #{supplierCode},
+            #{purchaseType},
+            #{returnDate},
+            #{contacts},
+            #{contactsNumber},
+            #{status},
+            #{remark},
+            #{createTime},
+            #{createBy}
+
+        )
+    </insert>
+
+    <update id="updatePurchaseReturnInfo" parameterType="PurchaseReturnInfo">
+        update wl_return_order_info
+        set
+        remark =#{remark},
+        status = #{status},
+        update_by = #{updateBy},
+        update_time = #{updateTime}
+        where id =#{id}
+    </update>
+
+    <select id="selectReturnOrderInfoById" parameterType="Long" resultMap="PurchaseReturnInfoResult">
+        <include refid="selectPurchaseReturnInfoVo"/>
+        where wroi.id = #{id}
+    </select>
+
+    <select id="selectReturnOrderInfoByReturnNumber" parameterType="String" resultMap="PurchaseReturnInfoVoResult">
+        <include refid="selectPurchaseReturnInfoVo"/>
+        where wroi.return_number = #{returnNumber}
+    </select>
+
+    <update id="deleteReturnOrderInfoById" parameterType="Long">
+        update wl_return_order_info
+        set status ='3'
+        where id = #{id}
+    </update>
+
+    <update id="updateReturnStatus" parameterType="PurchaseReturnInfo">
+        update wl_return_order_info
+        set
+        status = #{status},
+        approve_by = #{approveBy},
+        approve_time = #{approveTime}
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <update id="deleteReturnOrderInfoByIds" parameterType="String">
+        update wl_return_order_info
+        set status ='3'
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectReturnOrderInfoByIds" parameterType="String" resultMap="PurchaseReturnInfoResult">
+        <include refid="selectPurchaseReturnInfoVo"/>
+        where wroi.id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+</mapper>

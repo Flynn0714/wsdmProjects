@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.MaterialsMapper">
+
+    <select id="salesListByRelation" parameterType="String" resultType="Map">
+         select * from pd_asscit_view
+        <where>
+            <if test="type != null  and type != ''">
+                and type = #{type}
+            </if>
+            <if test="number != null  and number != ''">
+                and `number` like concat('%', #{number}, '%')
+            </if>
+            <if test="name != null  and name != ''">
+                and `name` like concat('%', #{name}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="salesList" parameterType="String" resultType="Map">
+--         select * from pd_association
+         select * from pd_association
+        <where>
+            <if test="type != null  and type != ''">
+                and details_type = #{type}
+            </if>
+            <if test="number != null  and number != ''">
+                and `material_number` like concat('%', #{number}, '%')
+            </if>
+            <if test="name != null  and name != ''">
+                and `material_name` like concat('%', #{name}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="purchaseList" parameterType="String" resultType="Map">
+        select * from materials_purchase_view
+        <where>
+            <if test="type != null  and type != ''">
+                and type = #{type}
+            </if>
+            <if test="number != null  and number != ''">
+                and `number` like concat('%', #{number}, '%')
+            </if>
+            <if test="name != null  and name != ''">
+                and `name` like concat('%', #{name}, '%')
+            </if>
+        </where>
+    </select>
+
+</mapper>

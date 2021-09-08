@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesGoodsRejectMapper">
+
+    <resultMap type="SalesGoodsReject" id="salesGoodsRejectAddLookResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="deliveredQuantity" column="delivery_amount"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="customer" column="customerName"/>
+        <result property="returnQuantity" column="returnQuantity"/>
+        <result property="returnAmount" column="return_amount"/>
+        <result property="returnNumber" column="return_number"/>
+        <result property="returnDate" column="return_date"/>
+        <result property="returnStatus" column="return_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="auditor" column="auditor"/>
+        <result property="audit_time" column="audit_time"/>
+    </resultMap>
+
+    <resultMap type="SalesGoodsRejectInfo" id="salesGoodsRejectInfoResult">
+        <result property="id" column="id"/>
+        <result property="returnNumber" column="return_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customerName" column="customer"/>
+        <result property="returnDate" column="return_date"/>
+        <result property="returnQuantity" column="return_quantity"/>
+        <result property="returnAmount" column="return_amount"/>
+        <result property="returnStatus" column="return_status"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="auditor" column="auditor"/>
+        <result property="audit_time" column="audit_time"/>
+    </resultMap>
+
+    <resultMap type="SalesGoodsReject" id="salesGoodsRejectAddResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customerName"/>
+    </resultMap>
+
+    <resultMap type="SalesGoodsRejectDetail" id="salesGoodsRejectDetailAddResult">
+        <result property="id" column="id"/>
+        <result property="saleId" column="sales_id"/>
+        <result property="detailsType" column="details_type"/>
+        <result property="materialNumber" column="materialNumber"/>
+        <result property="materialName" column="materialName"/>
+        <result property="deliveredQuantity" column="deliveredQuantity"/>
+        <result property="returnQuantity" column="returnQuantity"/>
+        <result property="quantityReturned" column="quantity"/>
+        <result property="price" column="price"/>
+        <result property="specs" column="specs"/>
+        <result property="subtotal" column="subtotal"/>
+        <result property="priceBy" column="price_by"/>
+        <result property="detailsRemark" column="details_remark"/>
+    </resultMap>
+
+    <select id="selectSalesGoodsRejectAll" parameterType="SalesGoodsRejectQuery"
+            resultMap="salesGoodsRejectAddLookResult">
+        SELECT DISTINCT
+        som.sales_number,
+        dqview.customer1 AS customerName,
+        som.expected_delivery_date AS delivery_date,
+        dqview.delivered_quantity AS delivery_amount
+        FROM
+        sales_order_manage som,
+        (
+        SELECT
+        sales_number,
+        CONCAT(any_value(customer),'.',any_value(customer_link)) AS customer1,
+        SUM(delivered_quantity) AS delivered_quantity
+        FROM
+        sales_order_delivery
+        <where>
+            delivery_status=2
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and customer like concat('%', #{customer}, '%')
+            </if>
+        </where>
+        GROUP BY sales_number
+        ) dqview
+        WHERE
+        som.sales_number = dqview.sales_number
+    </select>
+
+    <select id="selectSalesGoodsRejectInfo" parameterType="SalesGoodsRejectInfoQuery"
+            resultMap="salesGoodsRejectInfoResult">
+        select
+        id,
+        return_number,
+        sales_number,
+        customer,
+        return_date,
+        return_quantity,
+        return_amount,
+        return_status,
+        approve,
+        approve_time,
+        auditor,
+        audit_time
+        from sales_goods_return
+        <where>
+            <if test="returnNumber != null  and returnNumber != ''">
+                and return_number like concat('%', #{returnNumber}, '%')
+            </if>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="returnStatus != null  and returnStatus != ''">
+                and return_status=#{returnStatus}
+            </if>
+            <if test="returnDateStart != null  and returnDateEnd != null">
+                and return_date between #{returnDateStart} and #{returnDateEnd}
+            </if>
+        </where>
+        order by create_time DESC
+    </select>
+
+    <select id="selectSalesGoodsRejectDetailBySaleName" parameterType="String"
+            resultMap="salesGoodsRejectDetailAddResult">
+           SELECT DISTINCT somd.id,
+           somd.material_number AS materialNumber,
+           v.`name` AS materialName,
+           somd.details_type,
+           sodd.delivered_quantity AS deliveredQuantity,
+           somd.price,
+           pa.specs
+        FROM sales_order_manage_details somd
+        LEFT JOIN materials_sales_view v ON v.number = somd.material_number
+        LEFT JOIN sales_order_delivery_details sodd ON sodd.order_details_id = somd.id
+        LEFT JOIN sales_goods_return_details sgrd ON sgrd.sales_id =  somd.id
+        LEFT JOIN pd_association pa ON pa.material_number = somd.material_number
+        WHERE somd.sales_number = #{saleName}
+    </select>
+
+    <insert id="insertSalesGoodsReturn" parameterType="SalesGoodsRejectInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_goods_return
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="returnNumber != null">return_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customerName != null">customer,
+            </if>
+            <if test="returnDate != null">return_date,
+            </if>
+            <if test="returnQuantity != null">return_quantity,
+            </if>
+            <if test="returnAmount != null">return_amount,
+            </if>
+            <if test="returnStatus != null">return_status,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="auditor != null">auditor,
+            </if>
+            <if test="audit_time != null">audit_time,
+            </if>
+
+
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="returnNumber != null">#{returnNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customerName != null">#{customerName},
+            </if>
+            <if test="returnDate != null">#{returnDate},
+            </if>
+            <if test="returnQuantity != null">#{returnQuantity},
+            </if>
+            <if test="returnAmount != null">#{returnAmount},
+            </if>
+            <if test="returnStatus != null">#{returnStatus},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="auditor != null">#{auditor},
+            </if>
+            <if test="audit_time != null">#{audit_time},
+            </if>
+
+        </trim>
+    </insert>
+
+    <insert id="insertSalesGoodsReturnDetail" parameterType="SalesGoodsRejectDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_goods_return_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            sales_id,
+            <if test="returnNumber != null">return_number,
+            </if>
+            <if test="detailsType != null">details_type,
+            </if>
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="materialName != null">material_name,
+            </if>
+            <if test="deliveredQuantity != null">delivered_quantity,
+            </if>
+            <if test="quantityReturned != null">return_quantity,
+            </if>
+            <if test="returnQuantity != null">quantity,
+            </if>
+            <if test="price != null">price,
+            </if>
+            <if test="subtotal != null">subtotal,
+            </if>
+            <if test="detailsRemark != null">details_remark,
+            </if>
+            <if test="priceBy != null">price_by,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id},
+            <if test="returnNumber != null">#{returnNumber},
+            </if>
+            <if test="detailsType != null">#{detailsType},
+            </if>
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="materialName != null">#{materialName},
+            </if>
+            <if test="deliveredQuantity != null">#{deliveredQuantity},
+            </if>
+            <if test="quantityReturned != null">#{quantityReturned},
+            </if>
+            <if test="returnQuantity != null">#{returnQuantity},
+            </if>
+            <if test="price != null">#{price},
+            </if>
+            <if test="subtotal != null">#{subtotal},
+            </if>
+            <if test="detailsRemark != null">#{detailsRemark},
+            </if>
+            <if test="priceBy != null">#{priceBy},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getMaxBillingCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(return_number, #{code}, '') + 0)) maxCode
+        FROM sales_goods_return
+        WHERE return_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <select id="getSalesGoodsRejectDetailByReturnNumber" parameterType="String"
+            resultMap="salesGoodsRejectAddLookResult">
+        select
+        id,
+        return_number,
+        sales_number,
+        customer AS customerName,
+        return_date,
+        return_quantity AS returnQuantity,
+        return_amount,
+        return_status,
+        approve,
+        remark,
+        approve_time,
+        create_by,
+        create_time,
+        auditor,
+        audit_time
+        from sales_goods_return
+        where return_number=#{returnNumber}
+    </select>
+
+    <select id="selectSalesGoodsRejectDetailByReturnNumber" parameterType="String"
+            resultMap="salesGoodsRejectDetailAddResult">
+           SELECT
+	sgrd.id,
+	sgrd.sales_id,
+	sgrd.material_number AS materialNumber,
+	sgrd.material_name AS materialName,
+	sgrd.details_type,
+	sgrd.quantity AS returnQuantity,
+	sgrd.return_quantity AS quantity,
+	sgrd.delivered_quantity AS deliveredQuantity,
+	sgrd.price,
+	sgrd.subtotal,
+	sgrd.price_by,
+	sgrd.details_remark,
+	pa.specs
+FROM
+	sales_goods_return_details sgrd
+	LEFT JOIN pd_association pa ON pa.material_number = sgrd.material_number
+        WHERE return_number = #{returnNumber}
+    </select>
+
+    <select id="countReturnQuantity" parameterType="String"
+            resultType="Double">
+            SELECT
+                SUM(return_quantity) AS return_quantity
+            FROM
+                sales_goods_return
+            WHERE
+                return_status = '2'
+            AND sales_number=#{saleNumber}
+            GROUP BY sales_number
+    </select>
+
+    <select id="selectCustomerList" resultType="String">
+              SELECT DISTINCT
+               CONCAT(any_value(customer),'.',any_value(customer_link)) AS customer
+              FROM
+               sales_order_delivery
+              WHERE
+               delivery_status = '2'
+              GROUP BY
+               sales_number
+    </select>
+
+    <update id="updateSalesGoodsReturnDetail" parameterType="SalesGoodsRejectDetail">
+        update sales_goods_return_details
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="returnNumber != null">return_number =
+                #{returnNumber},
+            </if>
+            <if test="detailsType != null">details_type =
+                #{detailsType},
+            </if>
+            <if test="materialNumber != null">material_number =
+                #{materialNumber},
+            </if>
+            <if test="materialName != null">material_name =
+                #{materialName},
+            </if>
+            <if test="deliveredQuantity != null">delivered_quantity =
+                #{deliveredQuantity},
+            </if>
+            <if test="quantityReturned != null">return_quantity =
+                #{quantityReturned},
+            </if>
+            <if test="returnQuantity != null">quantity =
+                #{returnQuantity},
+            </if>
+            <if test="price != null">price =
+                #{price},
+            </if>
+            <if test="subtotal != null">subtotal =
+                #{subtotal},
+            </if>
+            <if test="priceBy != null">price_by =
+                #{priceBy},
+            </if>
+            <if test="detailsRemark != null">details_remark =
+                #{detailsRemark},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateSalesGoodsReturnDate" parameterType="SalesGoodsRejectInfo">
+        update sales_goods_return
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="returnQuantity != null">return_quantity =
+                #{returnQuantity},
+            </if>
+            <if test="returnAmount != null">return_amount =
+                #{returnAmount},
+            </if>
+            <if test="returnStatus != null">return_status =
+                #{returnStatus},
+            </if>
+            <if test="returnDate != null">return_date =
+                #{returnDate},
+            </if>
+            <if test="returnStatus != null">return_status =
+                #{returnStatus},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+
+            <if test="auditor != null">auditor =
+                #{auditor},
+            </if>
+
+            <if test="audit_time != null">audit_time =
+                #{audit_time},
+            </if>
+        </trim>
+        where return_number = #{returnNumber}
+    </update>
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdSemiProduceManageMapper">
+
+    <resultMap type="PdSemiProduceManage" id="PdSemiProduceManageResult">
+                    <result property="id" column="id"/>
+                    <result property="semiProduceName" column="semi_produce_name"/>
+                    <result property="semiProduceNumber" column="semi_produce_number"/>
+                    <result property="semiProduceModel" column="semi_produce_model"/>
+                    <result property="materialQuality" column="material_quality"/>
+                    <result property="modulusToothNumber" column="modulus_tooth_number"/>
+                    <result property="specifications" column="specifications"/>
+                    <result property="status" column="status"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+            </resultMap>
+
+    <sql id="selectPdSemiProduceManageVo">
+        select id, semi_produce_name, semi_produce_number, semi_produce_model, material_quality, modulus_tooth_number, specifications, status, create_by, create_time, update_by, update_time        from pd_semi_produce_manage
+    </sql>
+
+    <!--通过半成品组成编码查询半成品-->
+    <select id="selectPdSemiByNumber" parameterType="String" resultMap="PdSemiProduceManageResult">
+        select *
+        FROM pd_semi_produce_manage
+        where semi_produce_number = #{semiProduceNumber}
+    </select>
+
+    <select id="selectPdSemiProduceManageList" parameterType="PdSemiProduceManage" resultMap="PdSemiProduceManageResult">
+        <include refid="selectPdSemiProduceManageVo"/>
+        <where>
+                                                                                                    <if test="semiProduceName != null  and semiProduceName != ''">
+                            and semi_produce_name like concat('%', #{semiProduceName}, '%')
+                        </if>
+                                                                                                            <if test="semiProduceNumber != null  and semiProduceNumber != ''">
+                            and semi_produce_number like concat('%',#{semiProduceNumber},'%')
+                        </if>
+                                                                                                            <if test="semiProduceModel != null  and semiProduceModel != ''">
+                            and semi_produce_model = #{semiProduceModel}
+                        </if>
+                                                                                                            <if test="materialQuality != null  and materialQuality != ''">
+                            and material_quality = #{materialQuality}
+                        </if>
+                                                                                                            <if test="modulusToothNumber != null  and modulusToothNumber != ''">
+                            and modulus_tooth_number = #{modulusToothNumber}
+                        </if>
+                                                                                                            <if test="specifications != null  and specifications != ''">
+                            and specifications = #{specifications}
+                        </if>
+                                                                                                            <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+            <if test="id != null  and id != ''">
+                and id = #{id}
+            </if>
+        </where>
+        <![CDATA[order by create_time desc]]>
+    </select>
+
+    <select id="selectPdSemiProduceManageById" parameterType="Long" resultMap="PdSemiProduceManageResult">
+        <include refid="selectPdSemiProduceManageVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdSemiProduceManage" parameterType="PdSemiProduceManage" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_semi_produce_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="semiProduceName != null">semi_produce_name,
+                    </if>
+                                                                <if test="semiProduceNumber != null">semi_produce_number,
+                    </if>
+                                                                <if test="semiProduceModel != null">semi_produce_model,
+                    </if>
+                                                                <if test="materialQuality != null">material_quality,
+                    </if>
+                                                                <if test="modulusToothNumber != null">modulus_tooth_number,
+                    </if>
+                                                                <if test="specifications != null">specifications,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="semiProduceName != null">#{semiProduceName},
+                    </if>
+                                                                <if test="semiProduceNumber != null">#{semiProduceNumber},
+                    </if>
+                                                                <if test="semiProduceModel != null">#{semiProduceModel},
+                    </if>
+                                                                <if test="materialQuality != null">#{materialQuality},
+                    </if>
+                                                                <if test="modulusToothNumber != null">#{modulusToothNumber},
+                    </if>
+                                                                <if test="specifications != null">#{specifications},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdSemiProduceManage" parameterType="PdSemiProduceManage">
+        update pd_semi_produce_manage
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="semiProduceName != null">semi_produce_name =
+                        #{semiProduceName},
+                    </if>
+                                                                <if test="semiProduceNumber != null">semi_produce_number =
+                        #{semiProduceNumber},
+                    </if>
+                                                                <if test="semiProduceModel != null">semi_produce_model =
+                        #{semiProduceModel},
+                    </if>
+                                                                <if test="materialQuality != null">material_quality =
+                        #{materialQuality},
+                    </if>
+                                                                <if test="modulusToothNumber != null">modulus_tooth_number =
+                        #{modulusToothNumber},
+                    </if>
+                                                                <if test="specifications != null">specifications =
+                        #{specifications},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdSemiProduceManageById" parameterType="Long">
+        delete
+        from pd_semi_produce_manage where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdSemiProduceManageByIds" parameterType="String">
+        delete from pd_semi_produce_manage where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

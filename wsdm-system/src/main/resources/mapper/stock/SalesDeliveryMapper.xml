@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SalesDeliveryMapper">
+
+    <resultMap type="SalesDelivery" id="SalesDeliveryResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="salesStock" column="sales_stock"/>
+        <result property="salesStockName" column="sales_stock_name"/>
+        <result property="productionPlan" column="production_plan"/>
+        <result property="customerNumber" column="customer_number"/>
+        <result property="linkman" column="linkman"/>
+        <result property="linkphone" column="linkphone"/>
+        <result property="customerAddress" column="customer_address"/>
+        <result property="deliveryNum" column="delivery_num"/>
+        <result property="deliveryTime" column="delivery_time"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="approvePerson" column="approve_person"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="SalesDeliveryDetail" id="SalesDeliveryDetailResult">
+        <result property="id" column="id"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="quality" column="quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+        <result property="model" column="model"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="deliveredNum" column="delivered_num"/>
+        <result property="deliveryNum" column="delivery_num"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSalesDeliveryVo">
+        select ssd.id,
+               ssd.sales_number,
+               ssd.contract_number,
+               ssd.sales_stock,
+               ssd.sales_stock_name,
+               ssd.production_plan,
+               ssd.customer_number,
+               ssd.linkman,
+               ssd.linkphone,
+               ssd.customer_address,
+               ssd.delivery_num,
+               ssd.delivery_time,
+               ssd.remark,
+               ssd.status,
+               ssd.approve_person,
+               ssd.approve_time,
+               ssd.create_by,
+               ssd.create_time,
+               ssd.update_by,
+               ssd.update_time
+    </sql>
+
+    <sql id="selectSalesDeliveryDetailVo">
+        select ssdd.id,
+               ssdd.sales_number,
+               ssdd.contract_number,
+               ssdd.`name`,
+               ssdd.`type`,
+               ssdd.quality,
+               ssdd.modulus_tooth_number,
+               ssdd.specifications,
+               ssdd.model,
+               ssdd.order_num,
+               ssdd.delivered_num,
+               ssdd.delivery_num,
+               ssdd.create_time,
+               ssdd.update_by,
+               ssdd.update_time
+    </sql>
+
+    <select id="selectSalesDeliveryList" parameterType="SalesDeliveryRequest" resultMap="SalesDeliveryResult">
+        <include refid="selectSalesDeliveryVo"/>
+        from sk_sales_delivery ssd
+        <where>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and ssd.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and ssd.contract_number like concat('%', #{contractNumber}, '%')
+            </if>
+            <if test="customerNumber != null  and customerNumber != ''">
+                and ssd.customer_number like concat('%', #{customerNumber}, '%')
+            </if>
+            <if test="deliveryTimeStart != null and deliveryTimeEnd != null">
+                and ssd.delivery_time between #{deliveryTimeStart} and #{deliveryTimeEnd}
+            </if>
+            <if test="status != null  and status != ''">
+                and ssd.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSalesDeliveryById" parameterType="Long" resultMap="SalesDeliveryResult">
+        <include refid="selectSalesDeliveryVo"/>
+        from sk_sales_delivery ssd
+        where ssd.id = #{id}
+    </select>
+
+    <insert id="insertSalesDelivery" parameterType="SalesDelivery" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_sales_delivery
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="salesStock != null">sales_stock,
+            </if>
+            <if test="salesStockName != null">sales_stock_name,
+            </if>
+            <if test="productionPlan != null">production_plan,
+            </if>
+            <if test="customerNumber != null">customer_number,
+            </if>
+            <if test="linkman != null">linkman,
+            </if>
+            <if test="linkphone != null">linkphone,
+            </if>
+            <if test="customerAddress != null">customer_address,
+            </if>
+            <if test="deliveryNum != null">delivery_num,
+            </if>
+            <if test="deliveryTime != null">delivery_time,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="approvePerson != null">approve_person,
+            </if>
+            <if test="approveTime != null">approve_time,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="salesStock != null">#{salesStock},
+            </if>
+            <if test="salesStockName != null">#{salesStockName},
+            </if>
+            <if test="productionPlan != null">#{productionPlan},
+            </if>
+            <if test="customerNumber != null">#{customerNumber},
+            </if>
+            <if test="linkman != null">#{linkman},
+            </if>
+            <if test="linkphone != null">#{linkphone},
+            </if>
+            <if test="customerAddress != null">#{customerAddress},
+            </if>
+            <if test="deliveryNum != null">#{deliveryNum},
+            </if>
+            <if test="deliveryTime != null">#{deliveryTime},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="approvePerson != null">#{approvePerson},
+            </if>
+            <if test="approveTime != null">#{approveTime},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesDelivery" parameterType="SalesDelivery">
+        update sk_sales_delivery
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="salesNumber != null">sales_number =
+                #{salesNumber},
+            </if>
+            <if test="contractNumber != null">contract_number =
+                #{contractNumber},
+            </if>
+            <if test="salesStock != null">sales_stock =
+                #{salesStock},
+            </if>
+            <if test="salesStockName != null">sales_stock_name =
+                #{salesStockName},
+            </if>
+            <if test="productionPlan != null">production_plan =
+                #{productionPlan},
+            </if>
+            <if test="customerNumber != null">customer_number =
+                #{customerNumber},
+            </if>
+            <if test="linkman != null">linkman =
+                #{linkman},
+            </if>
+            <if test="linkphone != null">linkphone =
+                #{linkphone},
+            </if>
+            <if test="customerAddress != null">customer_address =
+                #{customerAddress},
+            </if>
+            <if test="deliveryNum != null">delivery_num =
+                #{deliveryNum},
+            </if>
+            <if test="deliveryTime != null">delivery_time =
+                #{deliveryTime},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="status != null">status =
+                #{status},
+            </if>
+            <if test="approvePerson != null">approve_person =
+                #{approvePerson},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteSalesDeliveryById" parameterType="Long">
+        update sk_sales_delivery set status = '0' where id = #{id}
+    </update>
+
+    <update id="deleteSalesDeliveryByIds" parameterType="String">
+        update sk_sales_delivery set status = '0' where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxSalesDeliveryCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(sales_number, #{code}, '') + 0)) maxCode
+        FROM sk_sales_delivery
+        WHERE sales_number REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+
+    <select id="selectSalesDeliveryDetailList" parameterType="SalesDeliveryDetail"
+            resultMap="SalesDeliveryDetailResult">
+        <include refid="selectSalesDeliveryDetailVo"/>
+        from sk_sales_delivery_detail ssdd
+        <where>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and ssdd.sales_number = #{salesNumber}
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and ssdd.contract_number = #{contractNumber}
+            </if>
+            <if test="name != null  and name != ''">
+                and ssdd.`name` like concat('%', #{name}, '%')
+            </if>
+            <if test="type != null  and type != ''">
+                and ssdd.`type` = #{type}
+            </if>
+            <if test="quality != null  and quality != ''">
+                and ssdd.quality = #{quality}
+            </if>
+            <if test="modulusToothNumber != null  and modulusToothNumber != ''">
+                and ssdd.modulus_tooth_number = #{modulusToothNumber}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSalesDeliveryDetailById" parameterType="Long" resultMap="SalesDeliveryDetailResult">
+        <include refid="selectSalesDeliveryDetailVo"/>
+        from sk_sales_delivery_detail ssdd
+        where ssdd.id = #{id}
+    </select>
+
+    <insert id="insertSalesDeliveryDetail" parameterType="SalesDeliveryDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_sales_delivery_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="name != null">name,
+            </if>
+            <if test="type != null">type,
+            </if>
+            <if test="quality != null">quality,
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number,
+            </if>
+            <if test="specifications != null">specifications,
+            </if>
+            <if test="model != null">model,
+            </if>
+            <if test="orderNum != null">order_num,
+            </if>
+            <if test="deliveredNum != null">delivered_num,
+            </if>
+            <if test="deliveryNum != null">delivery_num,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="name != null">#{name},
+            </if>
+            <if test="type != null">#{type},
+            </if>
+            <if test="quality != null">#{quality},
+            </if>
+            <if test="modulusToothNumber != null">#{modulusToothNumber},
+            </if>
+            <if test="specifications != null">#{specifications},
+            </if>
+            <if test="model != null">#{model},
+            </if>
+            <if test="orderNum != null">#{orderNum},
+            </if>
+            <if test="deliveredNum != null">#{deliveredNum},
+            </if>
+            <if test="deliveryNum != null">#{deliveryNum},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertSalesDeliveryDetailBatch" parameterType="SalesDeliveryDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_sales_delivery_detail(sales_number, contract_number, `name`, `type`, quality,
+        modulus_tooth_number, specifications,order_num, delivered_num, delivery_num, create_by, create_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.salesNumber},#{item.contractNumber},#{item.name},#{item.type},#{item.quality},
+            #{item.modulusToothNumber},#{item.specifications}#{item.orderNum},#{item.deliveredNum},#{item.deliveryNum},
+            #{item.createBy},NOW())
+        </foreach>
+    </insert>
+
+    <update id="updateSalesDeliveryDetail" parameterType="SalesDeliveryDetail">
+        update sk_sales_delivery_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="salesNumber != null">sales_number =
+                #{salesNumber},
+            </if>
+            <if test="contractNumber != null">contract_number =
+                #{contractNumber},
+            </if>
+            <if test="name != null">name =
+                #{name},
+            </if>
+            <if test="type != null">type =
+                #{type},
+            </if>
+            <if test="quality != null">quality =
+                #{quality},
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number =
+                #{modulusToothNumber},
+            </if>
+            <if test="specifications != null">specifications =
+                #{specifications},
+            </if>
+            <if test="model != null">model =
+                #{model},
+            </if>
+            <if test="orderNum != null">order_num =
+                #{orderNum},
+            </if>
+            <if test="deliveredNum != null">delivered_num =
+                #{deliveredNum},
+            </if>
+            <if test="deliveryNum != null">delivery_num =
+                #{deliveryNum},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSalesDeliveryDetailById" parameterType="Long">
+        delete
+        from sk_sales_delivery_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteSalesDeliveryDetailByIds" parameterType="String">
+        delete from sk_sales_delivery_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSalesDeliveryDetailBySalesNumber" parameterType="String">
+        delete
+        from sk_sales_delivery_detail
+        where sales_number = #{salesNumber}
+    </delete>
+
+</mapper>

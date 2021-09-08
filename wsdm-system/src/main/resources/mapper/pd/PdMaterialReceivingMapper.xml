@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdMaterialReceivingMapper">
+
+    <resultMap type="PdMaterialReceiving" id="PdMaterialReceivingResult">
+                    <result property="id" column="id"/>
+                    <result property="receivingCode" column="receiving_code"/>
+                    <result property="warehouseName" column="warehouse_name"/>
+                    <result property="warehouseCode" column="warehouse_code"/>
+                    <result property="receiver" column="receiver"/>
+                    <result property="receivingDept" column="receiving_dept"/>
+                    <result property="receivingDeptName" column="receiving_dept_name"/>
+                    <result property="receiveTime" column="receive_time"/>
+                    <result property="totalQuantity" column="total_quantity"/>
+                    <result property="remark" column="remark"/>
+                    <result property="status" column="status"/>
+                    <result property="auditor" column="auditor"/>
+                    <result property="auditTime" column="audit_time"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+                    <result property="supplierCode" column="supplier_code"/>
+                    <result property="supplierName" column="supplier_name"/>
+            </resultMap>
+
+    <sql id="selectPdMaterialReceivingVo">
+        select id, receiving_code, warehouse_name,warehouse_code, receiver, receiving_dept, receiving_dept_name, receive_time, total_quantity, remark, status, auditor, audit_time, create_by, create_time, update_by, update_time,supplier_code,supplier_name        from pd_material_receiving
+    </sql>
+
+    <select id="selectPdMaterialReceivingList" parameterType="PdMaterialReceiving" resultMap="PdMaterialReceivingResult">
+        <include refid="selectPdMaterialReceivingVo"/>
+        <where>
+                                                                                                    <if test="receivingCode != null  and receivingCode != ''">
+                            and receiving_code LIKE concat('%',#{receivingCode},'%')
+                        </if>
+                                                                                                            <if test="warehouseName != null  and warehouseName != ''">
+                            and warehouse_name = #{warehouseName}
+                        </if>
+          <if test="warehouseCode != null  and warehouseCode != ''">
+            and warehouse_code = #{warehouseCode}
+          </if>
+                                                                                                            <if test="receiver != null  and receiver != ''">
+                            and receiver like concat('%',#{receiver},'%')
+                        </if>
+                                                                                                            <if test="receivingDept != null  and receivingDept != ''">
+                            and receiving_dept = #{receivingDept}
+                        </if>
+                                                                                                            <if test="receiveTime != null ">
+                            and receive_time = #{receiveTime}
+                        </if>
+                                                                                                            <if test="totalQuantity != null ">
+                            and total_quantity = #{totalQuantity}
+                        </if>
+                                                                                                                                        <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+                                                                                                            <if test="auditor != null  and auditor != ''">
+                            and auditor = #{auditor}
+                        </if>
+                                                                                                            <if test="auditTime != null ">
+                            and audit_time = #{auditTime}
+                        </if>
+          <if test="beginTime!=null and beginTime!=''"><![CDATA[AND receive_time>=#{beginTime}]]></if>
+          <if test="endTime!=null and endTime!=''"><![CDATA[AND receive_time<=#{endTime}]]></if>
+          <if test="salesNumber!=null and salesNumber!=''">
+            <![CDATA[AND id IN (SELECT receiving_id FROM pd_material_receiving_detail WHERE sales_code=#{salesNumber} AND status = '1')]]>
+          </if>
+        </where>
+        <![CDATA[order by receiving_code desc]]>
+    </select>
+
+    <select id="selectPdMaterialReceivingById" parameterType="Long" resultMap="PdMaterialReceivingResult">
+        <include refid="selectPdMaterialReceivingVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdMaterialReceiving" parameterType="PdMaterialReceiving" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_material_receiving
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="receivingCode != null">receiving_code,
+                    </if>
+                                                                <if test="warehouseName != null">warehouse_name,
+                    </if>
+          <if test="warehouseCode != null">warehouse_code,
+          </if>
+                                                                <if test="receiver != null">receiver,
+                    </if>
+                                                                <if test="receivingDept != null">receiving_dept,
+                    </if>
+          <if test="receivingDeptName != null">receiving_dept_name,
+          </if>
+                                                                <if test="receiveTime != null">receive_time,
+                    </if>
+                                                                <if test="totalQuantity != null">total_quantity,
+                    </if>
+                                                                <if test="remark != null">remark,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="auditor != null">auditor,
+                    </if>
+                                                                <if test="auditTime != null">audit_time,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="supplierName != null">supplier_name,
+            </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="receivingCode != null">#{receivingCode},
+                    </if>
+                                                                <if test="warehouseName != null">#{warehouseName},
+                    </if>
+          <if test="warehouseCode != null">#{warehouseCode},
+          </if>
+                                                                <if test="receiver != null">#{receiver},
+                    </if>
+                                                                <if test="receivingDept != null">#{receivingDept},
+                    </if>
+          <if test="receivingDeptName != null">#{receivingDeptName},
+          </if>
+                                                                <if test="receiveTime != null">#{receiveTime},
+                    </if>
+                                                                <if test="totalQuantity != null">#{totalQuantity},
+                    </if>
+                                                                <if test="remark != null">#{remark},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="auditor != null">#{auditor},
+                    </if>
+                                                                <if test="auditTime != null">#{auditTime},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="supplierName != null">#{supplierName},
+            </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdMaterialReceiving" parameterType="PdMaterialReceiving">
+        update pd_material_receiving
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="receivingCode != null">receiving_code =
+                        #{receivingCode},
+                    </if>
+                                                                <if test="warehouseName != null">warehouse_name =
+                        #{warehouseName},
+                    </if>
+          <if test="warehouseCode != null">warehouse_code =
+            #{warehouseCode},
+          </if>
+                                                                <if test="receiver != null">receiver =
+                        #{receiver},
+                    </if>
+                                                                <if test="receivingDept != null">receiving_dept =
+                        #{receivingDept},
+                    </if>
+          <if test="receivingDeptName != null">receiving_dept_name =
+            #{receivingDeptName},
+          </if>
+                                                                <if test="receiveTime != null">receive_time =
+                        #{receiveTime},
+                    </if>
+                                                                <if test="totalQuantity != null">total_quantity =
+                        #{totalQuantity},
+                    </if>
+                                                                <if test="remark != null">remark =
+                        #{remark},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="auditor != null">auditor =
+                        #{auditor},
+                    </if>
+                                                                <if test="auditTime != null">audit_time =
+                        #{auditTime},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+            <if test="supplierCode != null">supplier_code =
+                #{supplierCode},
+            </if>
+            <if test="supplierName != null">supplier_name =
+                #{supplierName},
+            </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdMaterialReceivingById" parameterType="Long">
+        delete
+        from pd_material_receiving where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdMaterialReceivingByIds" parameterType="String">
+        delete from pd_material_receiving where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+  <select id="getLatestCode" resultType="String">
+    <![CDATA[SELECT receiving_code FROM pd_material_receiving ORDER BY id DESC LIMIT 1]]>
+  </select>
+</mapper>

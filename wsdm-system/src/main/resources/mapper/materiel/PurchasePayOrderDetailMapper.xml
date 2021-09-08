@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchasePayOrderDetailMapper">
+
+    <resultMap type="PurchasePayOrderDetail" id="PurchasePayOrderDetailResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="payWay" column="pay_way"/>
+        <result property="payBank" column="pay_bank"/>
+        <result property="payAccount" column="pay_account"/>
+        <result property="payAmount" column="pay_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchasePayOrderDetailVo">
+        select
+            pod.id,
+            pod.supplier_code,
+            ws.supplier_name AS supplierName,
+            pod.pay_way,
+            sdd1.dict_label AS payWayName,
+            pod.pay_bank,
+            sdd2.dict_label AS payBankName,
+            pod.pay_account,
+            pod.pay_amount,
+            pod.remark,
+            u1.nick_name AS create_by,
+            date_format( pod.create_time,'%Y-%m-%d') AS payDate,
+            pod.create_time
+        from wl_purchase_pay_order_detail pod
+         left join wl_supplier ws on pod.supplier_code = ws.supplier_code
+         left join sys_dict_data sdd1 on pod.pay_way = sdd1.dict_value and sdd1.dict_type = 'dict_pay_way'
+         left join sys_dict_data sdd2 on pod.pay_bank = sdd2.dict_value and sdd2.dict_type = 'dict_pay_bank'
+         left join sys_user u1 on u1.user_name = pod.create_by
+    </sql>
+
+    <select id="selectPurchasePayOrderDetailList" parameterType="PurchasePayOrderInfoVo"
+            resultMap="PurchasePayOrderDetailResult">
+        <include refid="selectPurchasePayOrderDetailVo"/>
+        <where>
+            <if test="supplierName != null  and supplierName != ''">
+                and ws.supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and pod.supplier_code  like concat('%', #{supplierCode}, '%')
+            </if>
+            <if test="payStartDate != null">
+                and date_format(pod.create_time,'%y%m%d') &gt;= date_format(#{payStartDate},'%y%m%d')
+            </if>
+            <if test="payEndDate != null">
+                and date_format(pod.create_time,'%y%m%d') &lt;= date_format(#{payEndDate},'%y%m%d')
+            </if>
+            <if test="payWay != null  and payWay != ''">
+                and pod.pay_way = #{payWay}
+            </if>
+        </where>
+        order by pod.create_time desc
+    </select>
+
+    <select id="selectPurchasePayOrderDetailByPayNumber" parameterType="String"
+            resultMap="PurchasePayOrderDetailResult">
+        <include refid="selectPurchasePayOrderDetailVo"/>
+        where pod.pay_number = #{payNumber}
+    </select>
+
+    <select id="selectPurchasePayOrderDetailById" parameterType="Long" resultMap="PurchasePayOrderDetailResult">
+        <include refid="selectPurchasePayOrderDetailVo"/>
+        where pod.id = #{id}
+    </select>
+
+    <insert id="insertPurchasePayOrderDetailBatch" parameterType="PurchasePayOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_pay_order_detail(
+        supplier_code,
+        pay_way,
+        pay_bank,
+        pay_account,
+        pay_amount,
+        remark,
+        create_by,
+        create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.supplierCode},
+            #{item.payWay},
+            #{item.payBank},
+            #{item.payAccount},
+            #{item.payAmount},
+            #{item.remark},
+            #{item.createBy},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertPurchasePayOrderDetail" parameterType="PurchasePayOrderDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_pay_order_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="payNumber != null and payNumber != ''">pay_number,
+            </if>
+            <if test="payWay != null">pay_way,
+            </if>
+            <if test="payBank != null">pay_bank,
+            </if>
+            <if test="payAccount != null">pay_account,
+            </if>
+            <if test="payAmount != null">pay_amount,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="payNumber != null and payNumber != ''">#{payNumber},
+            </if>
+            <if test="payWay != null">#{payWay},
+            </if>
+            <if test="payBank != null">#{payBank},
+            </if>
+            <if test="payAccount != null">#{payAccount},
+            </if>
+            <if test="payAmount != null">#{payAmount},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updatePurchasePayOrderDetail" parameterType="PurchasePayOrderDetail">
+        update wl_purchase_pay_order_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="payNumber != null and payNumber != ''">pay_number =
+                #{payNumber},
+            </if>
+            <if test="payWay != null">pay_way =
+                #{payWay},
+            </if>
+            <if test="payBank != null">pay_bank =
+                #{payBank},
+            </if>
+            <if test="payAccount != null">pay_account =
+                #{payAccount},
+            </if>
+            <if test="payAmount != null">pay_amount =
+                #{payAmount},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePurchasePayOrderDetailById" parameterType="Long">
+        delete
+        from wl_purchase_pay_order_detail
+        where id
+                  =
+              #{id}
+    </delete>
+
+    <delete id="deletePurchasePayOrderDetailByPayNumber" parameterType="String">
+        delete
+        from wl_purchase_pay_order_detail
+        where pay_number
+                  =
+              #{payNumber}
+    </delete>
+
+    <delete id="deletePurchasePayOrderDetailByIds" parameterType="String">
+        delete from wl_purchase_pay_order_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

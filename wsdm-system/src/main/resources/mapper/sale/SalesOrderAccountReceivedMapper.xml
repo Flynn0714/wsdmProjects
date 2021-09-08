@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderAccountReceivedMapper">
+
+    <resultMap type="SalesOrderAccountReceived" id="SalesOrderAccountReceivedResult">
+        <result property="id" column="id"/>
+        <result property="customer" column="customer"/>
+        <result property="customerName" column="customerName"/>
+        <result property="gatheringType" column="gathering_type"/>
+        <result property="gatheringUser" column="gathering_user"/>
+        <result property="paymentMethod" column="payment_method"/>
+        <result property="receivingBank" column="receiving_bank"/>
+        <result property="payeeAmount" column="payee_amount"/>
+        <result property="accountNumber" column="account_number"/>
+        <result property="gatheringDate" column="gathering_date"/>
+        <result property="gatheringTime" column="gatheringTime"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderAccountReceivedVo">
+        select id,
+               customer,
+               gathering_type,
+               gathering_user,
+               payment_method,
+               receiving_bank,
+               payee_amount,
+               account_number,
+               gathering_date,
+               gathering_date AS gatheringTime,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sales_order_account_received
+    </sql>
+
+    <select id="selectSalesOrderAccountReceivedList" parameterType="SalesOrderAccountReceivedQuery"
+            resultMap="SalesOrderAccountReceivedResult">
+        SELECT
+        soar.id,
+        soar.customer,
+        CONCAT( c.customer_number, '.', c.customer_name ) AS customerName,
+        soar.gathering_type,
+        u.nick_name AS gathering_user,
+        d1.dict_label AS payment_method,
+        d2.dict_label AS receiving_bank,
+        soar.payee_amount,
+        soar.remark,
+        soar.account_number,
+        soar.gathering_date,
+        soar.gathering_date AS gatheringTime
+        FROM sales_order_account_received soar
+        LEFT JOIN sys_dict_data d1 on d1.dict_value = soar.payment_method and d1.dict_type = 'payment_method'
+        LEFT JOIN sys_dict_data d2 on d2.dict_value = soar.receiving_bank and d2.dict_type = 'payment_bank'
+        LEFT JOIN sales_order_customer c ON soar.customer = c.customer_number
+        LEFT JOIN sys_user u ON u.user_name = soar.gathering_user
+        <where>
+            <if test="customer != null  and customer != ''">
+                and soar.customer = #{customer}
+            </if>
+            <if test="customerName != null  and customerName != ''">
+                and c.customer_name like concat('%', #{customerName}, '%')
+            </if>
+            <if test="paymentMethod != null  and paymentMethod != ''">
+                and soar.payment_method = #{paymentMethod}
+            </if>
+
+            <if test="gatheringDateStart != null and gatheringDateEnd != null">
+                and soar.gathering_date BETWEEN #{gatheringDateStart} AND #{gatheringDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSalesOrderAccountReceivedById" parameterType="Long" resultMap="SalesOrderAccountReceivedResult">
+        <include refid="selectSalesOrderAccountReceivedVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSalesOrderAccountReceived" parameterType="SalesOrderAccountReceived" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_account_received
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customer != null">customer,
+            </if>
+            <if test="gatheringType != null">gathering_type,
+            </if>
+            <if test="gatheringUser != null">gathering_user,
+            </if>
+            <if test="paymentMethod != null">payment_method,
+            </if>
+            <if test="receivingBank != null">receiving_bank,
+            </if>
+            <if test="payeeAmount != null">payee_amount,
+            </if>
+            <if test="accountNumber != null">account_number,
+            </if>
+            <if test="gatheringDate != null">gathering_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="gatheringType != null">#{gatheringType},
+            </if>
+            <if test="gatheringUser != null">#{gatheringUser},
+            </if>
+            <if test="paymentMethod != null">#{paymentMethod},
+            </if>
+            <if test="receivingBank != null">#{receivingBank},
+            </if>
+            <if test="payeeAmount != null">#{payeeAmount},
+            </if>
+            <if test="accountNumber != null">#{accountNumber},
+            </if>
+            <if test="gatheringDate != null">#{gatheringDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertSalesOrderAccountReceivedBatch" parameterType="SalesOrderAccountReceived" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_account_received(customer, gathering_type, gathering_user, payment_method,
+            receiving_bank, payee_amount, account_number, gathering_date, remark, create_by, create_time)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+               (#{item.customer}, #{item.gatheringType}, #{item.gatheringUser}, #{item.paymentMethod}, #{item.receivingBank},
+              #{item.payeeAmount}, #{item.accountNumber}, #{item.gatheringDate}, #{item.remark}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateSalesOrderAccountReceived" parameterType="SalesOrderAccountReceived">
+        update sales_order_account_received
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customer != null">customer =
+                #{customer},
+            </if>
+            <if test="gatheringType != null">gathering_type =
+                #{gatheringType},
+            </if>
+            <if test="gatheringUser != null">gathering_user =
+                #{gatheringUser},
+            </if>
+            <if test="paymentMethod != null">payment_method =
+                #{paymentMethod},
+            </if>
+            <if test="receivingBank != null">receiving_bank =
+                #{receivingBank},
+            </if>
+            <if test="payeeAmount != null">payee_amount =
+                #{payeeAmount},
+            </if>
+            <if test="accountNumber != null">account_number =
+                #{accountNumber},
+            </if>
+            <if test="gatheringDate != null">gathering_date =
+                #{gatheringDate},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSalesOrderAccountReceivedById" parameterType="Long">
+        delete
+        from sales_order_account_received
+        where id
+            =
+              #{id}
+    </delete>
+
+    <delete id="deleteSalesOrderAccountReceivedByIds" parameterType="String">
+        delete from sales_order_account_received where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

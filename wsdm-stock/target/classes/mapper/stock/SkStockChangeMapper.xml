@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockChangeMapper">
+
+    <resultMap type="SkStockChange" id="SkStockChangeResult">
+        <result property="id" column="id"/>
+        <result property="stockCode" column="stock_code"/>
+        <result property="produce" column="produce"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="batchCode" column="batch_code"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="changeNum" column="change_num"/>
+        <result property="changeTime" column="change_time"/>
+        <result property="operation" column="operation"/>
+        <result property="operationName" column="operation_name"/>
+        <result property="relationNumber" column="relation_number"/>
+        <result property="relationCode" column="relation_code"/>
+        <result property="relationName" column="relation_name"/>
+        <result property="version" column="version"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSkStockChangeVo">
+        select id,
+               stock_code,
+               stock_name,
+               batch_code,
+               produce,
+               produce_name,
+               change_num,
+               change_time,
+               operation,
+               operation_name,
+               relation_number,
+               relation_code,
+               relation_name,
+               version,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sk_stock_change
+    </sql>
+
+    <select id="selectSkStockChangeList" parameterType="SkStockChange" resultMap="SkStockChangeResult">
+        <include refid="selectSkStockChangeVo"/>
+        <where>
+            <if test="stockCode != null  and stockCode != ''">
+                and stock_code = #{stockCode}
+            </if>
+            <if test="stockName != null  and stockName != ''">
+                and stock_name like concat('%', #{stockName}, '%')
+            </if>
+            <if test="batchCode != null  and batchCode != ''">
+                and batch_code = #{batchCode}
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce = #{produce}
+            </if>
+            <if test="produceName != null  and produceName != ''">
+                and produce_name = #{produceName}
+            </if>
+            <if test="changeNum != null ">
+                and change_num = #{changeNum}
+            </if>
+            <if test="changeTime != null ">
+                and change_time = #{changeTime}
+            </if>
+            <if test="operation != null  and operation != ''">
+                and operation = #{operation}
+            </if>
+            <if test="operationName != null  and operationName != ''">
+                and operation_name like concat('%', #{operationName}, '%')
+            </if>
+            <if test="relationNumber != null  and relationNumber != ''">
+                and relation_number = #{relationNumber}
+            </if>
+            <if test="relationCode != null  and relationCode != ''">
+                and relation_code = #{relationCode}
+            </if>
+            <if test="relationName != null  and relationName != ''">
+                and relation_name like concat('%', #{relationName}, '%')
+            </if>
+            <if test="version != null  and version != ''">
+                and version = #{version}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSkStockChangeById" parameterType="Long" resultMap="SkStockChangeResult">
+        <include refid="selectSkStockChangeVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSkStockChange" parameterType="SkStockChange" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_change
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">stock_code,</if>
+            <if test="stockName != null">stock_name,</if>
+            <if test="batchCode != null">batch_code,</if>
+            <if test="produce != null">produce,</if>
+            <if test="produceName != null">produce_name,</if>
+            <if test="changeNum != null">change_num,</if>
+            <if test="changeTime != null">change_time,</if>
+            <if test="operation != null">operation,</if>
+            <if test="operationName != null">operation_name,</if>
+            <if test="relationNumber != null">relation_number,</if>
+            <if test="relationCode != null">relation_code,</if>
+            <if test="relationName != null">relation_name,</if>
+            <if test="version != null">version,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">#{stockCode},</if>
+            <if test="stockName != null">#{stockName},</if>
+            <if test="batchCode != null">#{batchCode},</if>
+            <if test="produce != null">#{produce},</if>
+            <if test="produceName != null">#{produceName},</if>
+            <if test="changeNum != null">#{changeNum},</if>
+            <if test="changeTime != null">#{changeTime},</if>
+            <if test="operation != null">#{operation},</if>
+            <if test="operationName != null">#{operationName},</if>
+            <if test="relationNumber != null">#{relationNumber},</if>
+            <if test="relationCode != null">#{relationCode},</if>
+            <if test="relationName != null">#{relationName},</if>
+            <if test="version != null">#{version},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">NOW(),</if>
+        </trim>
+    </insert>
+
+    <update id="updateSkStockChange" parameterType="SkStockChange">
+        update sk_stock_change
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stockCode != null">
+                stock_code = #{stockCode},
+            </if>
+            <if test="stockName != null">
+                stock_name = #{stockName},
+            </if>
+            <if test="batchCode != null">
+                batch_code = #{batchCode},
+            </if>
+            <if test="produce != null">
+                produce = #{produce},
+            </if>
+            <if test="produceName != null">
+                produce_name = #{produceName},
+            </if>
+            <if test="changeNum != null">
+                change_num = #{changeNum},
+            </if>
+            <if test="changeTime != null">
+                change_time = #{changeTime},
+            </if>
+            <if test="operation != null">
+                operation = #{operation},
+            </if>
+            <if test="operationName != null">
+                operation_name = #{operationName},
+            </if>
+            <if test="relationNumber != null">
+                relation_number = #{relationNumber},
+            </if>
+            <if test="relationCode != null">
+                relation_code = #{relationCode},
+            </if>
+            <if test="relationName != null">
+                relation_name = #{relationName},
+            </if>
+            <if test="version != null">
+                version = #{version},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            update_time = NOW()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockChangeById" parameterType="Long">
+        delete
+        from sk_stock_change
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteSkStockChangeByIds" parameterType="String">
+        delete from sk_stock_change where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

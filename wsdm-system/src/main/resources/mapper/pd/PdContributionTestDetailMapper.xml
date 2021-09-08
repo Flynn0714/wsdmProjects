@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdContributionTestDetailMapper">
+
+    <resultMap type="PdContributionTestDetail" id="PdContributionTestDetailResult">
+                    <result property="id" column="id"/>
+                    <result property="testId" column="test_id"/>
+                    <result property="materialCode" column="material_code"/>
+                    <result property="materialName" column="material_name"/>
+                    <result property="quantity" column="quantity"/>
+                    <result property="quantityTest" column="quantity_test"/>
+                    <result property="quantityPass" column="quantity_pass"/>
+                    <result property="quantityReject" column="quantity_reject"/>
+                    <result property="quantityFault" column="quantity_fault"/>
+                    <result property="quantityRework" column="quantity_rework"/>
+                    <result property="status" column="status"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+            </resultMap>
+
+    <sql id="selectPdContributionTestDetailVo">
+        select id, test_id, material_code, material_name, quantity, quantity_test, quantity_pass, quantity_reject, quantity_fault, quantity_rework, status, create_by, create_time, update_by, update_time        from pd_contribution_test_detail
+    </sql>
+
+    <select id="selectPdContributionTestDetailList" parameterType="PdContributionTestDetail" resultMap="PdContributionTestDetailResult">
+        <include refid="selectPdContributionTestDetailVo"/>
+        <where>
+                                                                                                    <if test="testId != null ">
+                            and test_id = #{testId}
+                        </if>
+                                                                                                            <if test="materialCode != null  and materialCode != ''">
+                            and material_code = #{materialCode}
+                        </if>
+                                                                                                            <if test="materialName != null  and materialName != ''">
+                            and material_name like concat('%', #{materialName}, '%')
+                        </if>
+                                                                                                            <if test="quantity != null ">
+                            and quantity = #{quantity}
+                        </if>
+                                                                                                            <if test="quantityTest != null ">
+                            and quantity_test = #{quantityTest}
+                        </if>
+                                                                                                            <if test="quantityPass != null ">
+                            and quantity_pass = #{quantityPass}
+                        </if>
+                                                                                                            <if test="quantityReject != null ">
+                            and quantity_reject = #{quantityReject}
+                        </if>
+                                                                                                            <if test="quantityFault != null ">
+                            and quantity_fault = #{quantityFault}
+                        </if>
+                                                                                                            <if test="quantityRework != null ">
+                            and quantity_rework = #{quantityRework}
+                        </if>
+                                                                                                            <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+                                                                                                                                                                        </where>
+    </select>
+
+    <select id="selectPdContributionTestDetailById" parameterType="Long" resultMap="PdContributionTestDetailResult">
+        <include refid="selectPdContributionTestDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdContributionTestDetail" parameterType="PdContributionTestDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_contribution_test_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="testId != null">test_id,
+                    </if>
+                                                                <if test="materialCode != null">material_code,
+                    </if>
+                                                                <if test="materialName != null">material_name,
+                    </if>
+                                                                <if test="quantity != null">quantity,
+                    </if>
+                                                                <if test="quantityTest != null">quantity_test,
+                    </if>
+                                                                <if test="quantityPass != null">quantity_pass,
+                    </if>
+                                                                <if test="quantityReject != null">quantity_reject,
+                    </if>
+                                                                <if test="quantityFault != null">quantity_fault,
+                    </if>
+                                                                <if test="quantityRework != null">quantity_rework,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="testId != null">#{testId},
+                    </if>
+                                                                <if test="materialCode != null">#{materialCode},
+                    </if>
+                                                                <if test="materialName != null">#{materialName},
+                    </if>
+                                                                <if test="quantity != null">#{quantity},
+                    </if>
+                                                                <if test="quantityTest != null">#{quantityTest},
+                    </if>
+                                                                <if test="quantityPass != null">#{quantityPass},
+                    </if>
+                                                                <if test="quantityReject != null">#{quantityReject},
+                    </if>
+                                                                <if test="quantityFault != null">#{quantityFault},
+                    </if>
+                                                                <if test="quantityRework != null">#{quantityRework},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdContributionTestDetail" parameterType="PdContributionTestDetail">
+        update pd_contribution_test_detail
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="testId != null">test_id =
+                        #{testId},
+                    </if>
+                                                                <if test="materialCode != null">material_code =
+                        #{materialCode},
+                    </if>
+                                                                <if test="materialName != null">material_name =
+                        #{materialName},
+                    </if>
+                                                                <if test="quantity != null">quantity =
+                        #{quantity},
+                    </if>
+                                                                <if test="quantityTest != null">quantity_test =
+                        #{quantityTest},
+                    </if>
+                                                                <if test="quantityPass != null">quantity_pass =
+                        #{quantityPass},
+                    </if>
+                                                                <if test="quantityReject != null">quantity_reject =
+                        #{quantityReject},
+                    </if>
+                                                                <if test="quantityFault != null">quantity_fault =
+                        #{quantityFault},
+                    </if>
+                                                                <if test="quantityRework != null">quantity_rework =
+                        #{quantityRework},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdContributionTestDetailById" parameterType="Long">
+        delete
+        from pd_contribution_test_detail where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdContributionTestDetailByIds" parameterType="String">
+        delete from pd_contribution_test_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

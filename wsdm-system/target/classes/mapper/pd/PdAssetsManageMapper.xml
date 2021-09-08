@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdAssetsManageMapper">
+
+    <resultMap type="PdAssetsManage" id="PdAssetsManageResult">
+        <result property="id" column="id"/>
+        <result property="assetNumber" column="asset_number"/>
+        <result property="assetName" column="asset_name"/>
+        <result property="assetModel" column="asset_model"/>
+        <result property="assetQuantity" column="asset_quantity"/>
+        <result property="scrapQuantity" column="scrap_quantity"/>
+        <result property="repairQuantity" column="repair_quantity"/>
+        <result property="usableQuantity" column="usable_quantity"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPdAssetsManageVo">
+        select id, asset_number, asset_name, asset_model, asset_quantity,
+         scrap_quantity, repair_quantity, usable_quantity, remark, create_by,
+          create_time, update_by, update_time
+         from pd_assets_manage
+    </sql>
+
+    <select id="selectPdAssetsManageList" parameterType="PdAssetsManage" resultMap="PdAssetsManageResult">
+        <include refid="selectPdAssetsManageVo"/>
+        <where>
+            <if test="assetNumber != null  and assetNumber != ''">
+                and asset_number like concat('%',#{assetNumber},'%')
+            </if>
+            <if test="assetName != null  and assetName != ''">
+                and asset_name like concat('%', #{assetName}, '%')
+            </if>
+            <if test="assetModel != null  and assetModel != ''">
+                and asset_model = #{assetModel}
+            </if>
+            <if test="assetQuantity != null ">
+                and asset_quantity = #{assetQuantity}
+            </if>
+            <if test="scrapQuantity != null ">
+                and scrap_quantity = #{scrapQuantity}
+            </if>
+            <if test="repairQuantity != null ">
+                and repair_quantity = #{repairQuantity}
+            </if>
+            <if test="usableQuantity != null ">
+                and usable_quantity = #{usableQuantity}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPdAssetsManageById" parameterType="Long" resultMap="PdAssetsManageResult">
+        <include refid="selectPdAssetsManageVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdAssetsManage" parameterType="PdAssetsManage" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_assets_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="assetNumber != null">asset_number,
+            </if>
+            <if test="assetName != null">asset_name,
+            </if>
+            <if test="assetModel != null">asset_model,
+            </if>
+            <if test="assetQuantity != null">asset_quantity,
+            </if>
+            <if test="scrapQuantity != null">scrap_quantity,
+            </if>
+            <if test="repairQuantity != null">repair_quantity,
+            </if>
+            <if test="usableQuantity != null">usable_quantity,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="assetNumber != null">#{assetNumber},
+            </if>
+            <if test="assetName != null">#{assetName},
+            </if>
+            <if test="assetModel != null">#{assetModel},
+            </if>
+            <if test="assetQuantity != null">#{assetQuantity},
+            </if>
+            <if test="scrapQuantity != null">#{scrapQuantity},
+            </if>
+            <if test="repairQuantity != null">#{repairQuantity},
+            </if>
+            <if test="usableQuantity != null">#{usableQuantity},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updatePdAssetsManage" parameterType="PdAssetsManage">
+        update pd_assets_manage
+        <trim prefix="SET" suffixOverrides=",">
+
+            <if test="assetName != null">asset_name =
+                #{assetName},
+            </if>
+            <if test="assetModel != null">asset_model =
+                #{assetModel},
+            </if>
+            <if test="assetQuantity != null">asset_quantity =
+                #{assetQuantity},
+            </if>
+            <if test="scrapQuantity != null">scrap_quantity =
+                #{scrapQuantity},
+            </if>
+            <if test="repairQuantity != null">repair_quantity =
+                #{repairQuantity},
+            </if>
+            <if test="usableQuantity != null">usable_quantity =
+                #{usableQuantity},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdAssetsManageById" parameterType="Long">
+        delete
+        from pd_assets_manage where id  = #{id}
+    </delete>
+
+    <delete id="deletePdAssetsManageByIds" parameterType="String">
+        delete from pd_assets_manage where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getMaxCustomerCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(asset_number, #{code}, '') + 0)) maxCode
+        FROM pd_assets_manage
+        WHERE asset_number REGEXP CONCAT(#{code},'[0-9]*$')
+    </select>
+
+</mapper>

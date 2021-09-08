@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderDeliveryMapper">
+
+    <resultMap type="SalesOrderDelivery" id="SalesOrderDeliveryResult">
+        <result property="id" column="id"/>
+        <result property="deliveryNumber" column="delivery_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="customerLink" column="customer_link"/>
+        <result property="customerLinkTel" column="customer_link_tel"/>
+        <result property="customerAddress" column="customer_address"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="remark" column="remark"/>
+        <result property="deliveryStatus" column="delivery_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderDeliveryInfo" id="SalesOrderDeliveryInfoResult">
+        <result property="id" column="id"/>
+        <result property="deliveryNumber" column="delivery_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="customerLink" column="customer_link"/>
+        <result property="customerLinkTel" column="customer_link_tel"/>
+        <result property="customerAddress" column="customer_address"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="remark" column="remark"/>
+        <result property="deliveryStatus" column="delivery_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+
+        <result property="total" column="total"/>
+        <result property="amount" column="amount"/>
+        <result property="customerName" column="customerName"/>
+        <result property="deliveryStatusName" column="deliveryStatusName"/>
+        <result property="approveName" column="approveName"/>
+    </resultMap>
+
+    <select id="selectSalesOrderDeliveryList" parameterType="SalesOrderDeliveryQuery" resultMap="SalesOrderDeliveryInfoResult">
+        SELECT
+            sod.id,
+            sod.delivery_number,
+            sod.sales_number,
+            sod.customer,
+            concat( sc.customer_number, '.', sc.customer_name ) AS customerName,
+            sod.delivery_date,
+            sod.delivery_status,
+            sdd.dict_label AS deliveryStatusName,
+            u1.nick_name AS create_by,
+            sod.create_time,
+            som.order_quantity AS total,
+            som.order_amount AS amount,
+        IFNULL((select sum(deliver_quantity) from sales_order_delivery_details where delivery_number = sod.delivery_number ), 0.0) AS deliverQuantity,
+        IFNULL((select sum(delivery_amount) from sales_order_delivery_details where delivery_number = sod.delivery_number ), 0.00) AS deliveryAmount
+        FROM sales_order_delivery sod
+        LEFT JOIN sales_order_manage som ON som.sales_number = sod.sales_number
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sod.customer
+        LEFT JOIN sys_dict_data sdd ON sdd.dict_value = sod.delivery_status AND sdd.dict_type = 'dict_sale_order_status'
+        LEFT JOIN sys_user u1 ON u1.user_name = sod.create_by
+        <where>
+            <if test="deliveryNumber != null  and deliveryNumber != ''">
+                and sod.delivery_number like concat('%', #{deliveryNumber}, '%')
+            </if>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sod.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and sod.customer = #{customer}
+            </if>
+            <if test="deliveryDateStart != null and deliveryDateEnd != null ">
+                and sod.delivery_date between #{deliveryDateStart} and #{deliveryDateEnd}
+            </if>
+            <if test="deliveryStatus != null  and deliveryStatus != ''">
+                and sod.delivery_status = #{deliveryStatus}
+            </if>
+        </where>
+        order by sod.delivery_number DESC, sod.create_time DESC
+    </select>
+
+    <select id="selectSalesOrderDeliveryById" parameterType="Long" resultMap="SalesOrderDeliveryInfoResult">
+        select sod.id,
+           sod.delivery_number,
+           sod.sales_number,
+           sod.customer,
+           concat(sc.customer_number, '.', sc.customer_name) AS customerName,
+           sod.customer_link,
+           sod.customer_link_tel,
+           sod.customer_address,
+           sod.delivery_date,
+           sod.delivered_quantity,
+           sod.remark,
+           sod.delivery_status,
+           sdd.dict_label AS deliveryStatusName,
+           u1.nick_name AS create_by,
+           sod.create_time,
+           sod.approve,
+           u2.nick_name AS approveName,
+           sod.approve_time
+        from sales_order_delivery sod
+        left join sales_order_customer sc on sc.customer_number = sod.customer
+        left join sys_dict_data sdd on sdd.dict_value = sod.delivery_status and sdd.dict_type = 'dict_sale_order_status'
+        left join sys_user u1 on u1.user_name = sod.create_by
+        left join sys_user u2 on u2.user_name = sod.approve
+        where sod.id = #{id}
+    </select>
+
+    <select id="selectSalesOrderDeliveryByNumber" parameterType="java.lang.String" resultMap="SalesOrderDeliveryInfoResult">
+        select sod.id,
+           sod.delivery_number,
+           sod.sales_number,
+           sod.customer,
+           concat(sc.customer_number, '.', sc.customer_name) AS customerName,
+           sod.customer_link,
+           sod.customer_link_tel,
+           sod.customer_address,
+           sod.delivery_date,
+           sod.delivered_quantity,
+           sod.remark,
+           sod.delivery_status,
+           sdd.dict_label AS deliveryStatusName,
+           u1.nick_name AS create_by,
+           sod.create_time,
+           sod.approve,
+           u2.nick_name AS approveName,
+           sod.approve_time
+        from sales_order_delivery sod
+        left join sales_order_customer sc on sc.customer_number = sod.customer
+        left join sys_dict_data sdd on sdd.dict_value = sod.delivery_status and sdd.dict_type = 'dict_sale_order_status'
+        left join sys_user u1 on u1.user_name = sod.create_by
+        left join sys_user u2 on u2.user_name = sod.approve
+        where sod.delivery_number = #{deliveryNumber}
+    </select>
+
+    <select id="selectSalesOrderDeliveryByCode" parameterType="String" resultMap="SalesOrderDeliveryResult">
+        select id,
+               delivery_number,
+               sales_number,
+               customer,
+               customer_link,
+               customer_link_tel,
+               customer_address,
+               delivered_quantity,
+               delivery_amount,
+               delivery_date,
+               remark,
+               delivery_status,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               approve,
+               approve_time
+        from sales_order_delivery
+        where delivery_number = #{deliveryNumber}
+    </select>
+
+    <select id="getSalesDeliveryOrder" resultType="Map" parameterType="String">
+        SELECT
+            sod.id,
+            sod.sales_number,
+            sod.delivery_number,
+            sod.customer,
+            concat( sc.customer_number, '.', sc.customer_name ) AS customerName,
+            sod.delivery_date AS deliveryDate,
+            IFNULL(sod.delivery_amount, 0.00) AS deliveryAmount ,
+            IFNULL(( SELECT sum( gathering_amount ) FROM sales_order_gathering WHERE delivery_number = sod.delivery_number AND gathering_status = '2' ), 0.00) AS gatheringAmount
+        FROM sales_order_delivery sod
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sod.customer
+        where sod.delivery_status = '2'
+        <if test="deliveryNumber != null and deliveryNumber != ''">
+            and sod.delivery_number like concat('%', #{deliveryNumber}, '%')
+        </if>
+        <if test="customer != null and customer != ''">
+            and sod.customer = #{customer}
+        </if>
+        HAVING deliveryAmount > gatheringAmount
+    </select>
+
+    <select id="getSalesDeliveryOrder_COUNT" resultType="int">
+        select count(1) from(
+        SELECT
+        sod.id,
+        sod.sales_number,
+        sod.delivery_number,
+        sod.customer,
+        IFNULL(sod.delivery_amount, 0.00) AS deliveryAmount ,
+        IFNULL(( SELECT sum( gathering_amount ) FROM sales_order_gathering WHERE delivery_number = sod.delivery_number AND gathering_status = '2' ), 0.00) AS gatheringAmount
+        FROM sales_order_delivery sod
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sod.customer
+        where sod.delivery_status = '2'
+        <if test="deliveryNumber != null and deliveryNumber != ''">
+            and sod.delivery_number like concat('%', #{deliveryNumber}, '%')
+        </if>
+        <if test="customer != null and customer != ''">
+            and sod.customer = #{customer}
+        </if>
+        HAVING deliveryAmount > gatheringAmount) AS t1
+    </select>
+
+    <select id="getAddDeliverInfoBySalesNumber" parameterType="String" resultType="Map">
+        select
+            som.sales_number,
+            som.customer,
+            concat(sc.customer_number, '.', sc.customer_name) AS customerName,
+            sc.linkman AS customer_link,
+            sc.phone AS customer_link_tel,
+            sc.address AS customer_address
+        from sales_order_manage som
+        left join sales_order_customer sc on sc.customer_number = som.customer
+        where som.sales_number = #{salesNumber}
+    </select>
+
+    <select id="getDeliverDetailsBySalesNumber" parameterType="String" resultType="SalesOrderDeliveryDetails">
+        SELECT
+            somd.id AS orderDetailsId,
+            somd.details_type AS detailsType,
+            sdd.dict_label AS detailsTypeName,
+            somd.material_number AS materialNumber,
+             pa.specs specs,
+             pa.material_name materialNumberName,
+            somd.quantity,
+            somd.price,
+            somd.subtotal,
+            (select sum(sodd.delivered_quantity) from sales_order_delivery_details sodd where sodd.order_details_id = somd.id) AS deliveredQuantity
+        FROM sales_order_manage_details somd
+        left join pd_association pa on pa.material_number  = somd.material_number
+        LEFT JOIN sys_dict_data sdd ON somd.details_type = sdd.dict_value and sdd.dict_type = 'dict_material_type'
+        WHERE somd.sales_number = #{salesNumber}
+    </select>
+
+    <select id="getDeliverDetailsByDeliveryNumber" parameterType="String" resultType="SalesOrderDeliveryDetails">
+        SELECT
+            sodd.id,
+            somd.id AS orderDetailsId,
+            sodd.delivery_number AS deliveryNumber,
+            sodd.sales_number AS salesNumber,
+            somd.details_type AS detailsType,
+            sdd.dict_label AS detailsTypeName,
+            somd.material_number AS materialNumber,
+            msv.name AS materialNumberName,
+            pa.specs specs ,
+            somd.quantity,
+            somd.price,
+            ( SELECT sum( delivered_quantity ) FROM sales_order_delivery_details WHERE order_details_id = somd.id AND sales_number = somd.sales_number ) AS deliveredQuantity,
+            sodd.deliver_quantity AS deliverQuantity,
+            sodd.delivery_amount AS deliveryAmount
+        FROM
+            sales_order_delivery_details sodd
+        LEFT JOIN sales_order_manage_details somd ON somd.id = sodd.order_details_id
+        LEFT JOIN materials_sales_view msv ON msv.number = somd.material_number
+        LEFT JOIN sys_dict_data sdd ON somd.details_type = sdd.dict_value and sdd.dict_type = 'dict_material_type'
+        left join pd_association pa on pa.material_number  = somd.material_number
+        WHERE sodd.delivery_number = #{deliveryNumber}
+    </select>
+
+    <select id="getDeliverQuantity" parameterType="String" resultType="Map">
+        SELECT
+        cast(a.quantity AS char) AS quantity, cast(b.deliverQuantity AS char) AS deliverQuantity
+        FROM
+        ( SELECT quantity FROM sales_order_manage_details WHERE id = #{orderDetailsId}  ) a,
+        (SELECT
+        IFNULL( sum( a.deliver_quantity ), '0.0' ) AS deliverQuantity
+        FROM
+        sales_order_delivery_details a
+        LEFT JOIN sales_order_delivery b ON a.delivery_number = b.delivery_number
+        WHERE a.order_details_id = #{orderDetailsId} <if test="id != null and id != ''"> and a.id != #{id}</if>
+        AND b.delivery_status > 0
+        ) b
+    </select>
+
+    <select id="getDeliverTotal" parameterType="String" resultType="BigDecimal">
+        select sum(delivered_quantity) AS deliveredQuantity
+        from sales_order_delivery
+        where sales_number = #{salesNumber}
+    </select>
+
+    <select id="getMaxDeliveryCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(delivery_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_delivery
+        WHERE delivery_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <insert id="insertSalesOrderDelivery" parameterType="SalesOrderDelivery" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_delivery
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deliveryNumber != null">delivery_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customer != null">customer,
+            </if>
+            <if test="customerLink != null">customer_link,
+            </if>
+            <if test="customerLinkTel != null">customer_link_tel,
+            </if>
+            <if test="customerAddress != null">customer_address,
+            </if>
+            <if test="deliveryDate != null">delivery_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="deliveryStatus != null">delivery_status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deliveryNumber != null">#{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="customerLink != null">#{customerLink},
+            </if>
+            <if test="customerLinkTel != null">#{customerLinkTel},
+            </if>
+            <if test="customerAddress != null">#{customerAddress},
+            </if>
+            <if test="deliveryDate != null">#{deliveryDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="deliveryStatus != null">#{deliveryStatus},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSalesOrderDelivery" parameterType="SalesOrderDelivery">
+        update sales_order_delivery
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deliveryNumber != null">delivery_number =
+                #{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">sales_number =
+                #{salesNumber},
+            </if>
+            <if test="customer != null">customer =
+                #{customer},
+            </if>
+            <if test="customerLink != null">customer_link =
+                #{customerLink},
+            </if>
+            <if test="customerLinkTel != null">customer_link_tel =
+                #{customerLinkTel},
+            </if>
+            <if test="customerAddress != null">customer_address =
+                #{customerAddress},
+            </if>
+            <if test="deliveryDate != null">delivery_date =
+                #{deliveryDate},
+            </if>
+            <if test="deliveredQuantity != null">delivered_quantity =
+                #{deliveredQuantity},
+            </if>
+            <if test="deliveryAmount != null">delivery_amount =
+                #{deliveryAmount},
+            </if>
+            remark = #{remark},
+            <if test="deliveryStatus != null">delivery_status =
+                #{deliveryStatus},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+            <if test="approve != null">approve =
+                #{approve},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <insert id="insertDeliveryDetailsBatch" parameterType="SalesOrderDeliveryDetails">
+        insert into sales_order_delivery_details(delivery_number, sales_number, order_details_id, deliver_quantity, delivery_amount,total_weight)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.deliveryNumber}, #{item.salesNumber}, #{item.orderDetailsId}, #{item.deliverQuantity}, #{item.deliveryAmount}, #{item.totalWeight})
+        </foreach>
+    </insert>
+
+    <update id="updateDeliveryDetailsBatch" parameterType="SalesOrderDeliveryDetails">
+        <foreach collection="list" item="item" index="index" separator=";">
+            update sales_order_delivery_details
+            <set>
+                `deliver_quantity` = #{item.deliverQuantity},
+                `delivery_amount` = #{item.deliveryAmount},
+                `update_by` = #{item.updateBy},
+                `update_time` = #{item.updateTime}
+            </set>
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateDeliveredQuantityBatch" parameterType="SalesOrderDeliveryDetails">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update sales_order_delivery_details set delivered_quantity = #{item.deliveredQuantity}
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+    <update id="deleteSalesOrderDeliveryById" parameterType="Long">
+        update sales_order_delivery set delivery_status = '-1' where id = #{id}
+    </update>
+</mapper>

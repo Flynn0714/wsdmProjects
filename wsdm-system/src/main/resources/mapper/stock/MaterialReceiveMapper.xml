@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.MaterialReceiveMapper">
+
+    <resultMap type="MaterialReceive" id="MaterialReceiveResult">
+        <result property="id" column="id"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="materialStock" column="material_stock"/>
+        <result property="materialStockName" column="material_stock_name"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="productionPlan" column="production_plan"/>
+        <result property="receivePerson" column="receive_person"/>
+        <result property="receiveDept" column="receive_dept"/>
+        <result property="receiveTime" column="receive_time"/>
+        <result property="receiveTotal" column="receive_total"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="approvePerson" column="approve_person"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="MaterialReceiveDetail" id="MaterialReceiveDetailResult">
+        <result property="id" column="id"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="produce" column="produce"/>
+        <result property="material" column="material"/>
+        <result property="type" column="type"/>
+        <result property="quality" column="quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+        <result property="model" column="model"/>
+        <result property="availableNum" column="available_num"/>
+        <result property="unclaimedNum" column="unclaimed_num"/>
+        <result property="receiveNum" column="receive_num"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectMaterialReceiveVo">
+        select smr.id,
+               smr.material_number,
+               smr.material_stock,
+               smr.material_stock_name,
+               smr.supplier_code,
+               smr.production_plan,
+               smr.receive_person,
+               smr.receive_dept,
+               smr.receive_time,
+               smr.receive_total,
+               smr.remark,
+               smr.status,
+               smr.approve_person,
+               smr.approve_time,
+               smr.create_by,
+               smr.create_time,
+               smr.update_by,
+               smr.update_time
+    </sql>
+
+    <sql id="selectMaterialReceiveDetailVo">
+        select id,
+               material_number,
+               contract_number,
+               produce,
+               material,
+               `type`,
+               quality,
+               modulus_tooth_number,
+               specifications,
+               model,
+               available_num,
+               unclaimed_num,
+               receive_num,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sk_material_receive_detail
+    </sql>
+
+    <select id="selectMaterialReceiveList" parameterType="MaterialReceiveRequest" resultMap="MaterialReceiveResult">
+        <include refid="selectMaterialReceiveVo"/>
+        from sk_material_receive smr
+        <where>
+            <if test="materialNumber != null  and materialNumber != ''">
+                and smr.material_number like concat('%', #{materialNumber}, '%')
+            </if>
+            <if test="materialStock != null  and materialStock != ''">
+                and smr.material_stock = #{materialStock}
+            </if>
+            <if test="materialStockName != null  and materialStockName != ''">
+                and smr.material_stock_name like concat('%', #{materialStockName}, '%')
+            </if>
+            <if test="productionPlan != null  and productionPlan != ''">
+                and smr.production_plan like concat('%', #{productionPlan}, '%')
+            </if>
+            <if test="receivePerson != null  and receivePerson != ''">
+                and smr.receive_person like concat('%', #{receivePerson}, '%')
+            </if>
+            <if test="receiveDept != null  and receiveDept != ''">
+                and smr.receive_dept = #{receiveDept}
+            </if>
+            <if test="receiveTimeStart != null and receiveTimeEnd != null">
+                and smr.receive_time between #{receiveTimeStart} and #{receiveTimeEnd}
+            </if>
+            <if test="status != null  and status != ''">
+                and smr.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectMaterialReceiveById" parameterType="Long" resultMap="MaterialReceiveResult">
+        <include refid="selectMaterialReceiveVo"/> from sk_material_receive smr
+        where smr.id = #{id}
+    </select>
+
+    <insert id="insertMaterialReceive" parameterType="MaterialReceive" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_material_receive
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="materialStock != null">material_stock,
+            </if>
+            <if test="materialStockName != null">material_stock_name,
+            </if>
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="productionPlan != null">production_plan,
+            </if>
+            <if test="receivePerson != null">receive_person,
+            </if>
+            <if test="receiveDept != null">receive_dept,
+            </if>
+            <if test="receiveTime != null">receive_time,
+            </if>
+            <if test="receiveTotal != null">receive_total,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="approvePerson != null">approve_person,
+            </if>
+            <if test="approveTime != null">approve_time,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="materialStock != null">#{materialStock},
+            </if>
+            <if test="materialStockName != null">#{materialStockName},
+            </if>
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="productionPlan != null">#{productionPlan},
+            </if>
+            <if test="receivePerson != null">#{receivePerson},
+            </if>
+            <if test="receiveDept != null">#{receiveDept},
+            </if>
+            <if test="receiveTime != null">#{receiveTime},
+            </if>
+            <if test="receiveTotal != null">#{receiveTotal},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="approvePerson != null">#{approvePerson},
+            </if>
+            <if test="approveTime != null">#{approveTime},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            NOW()
+        </trim>
+    </insert>
+
+    <update id="updateMaterialReceive" parameterType="MaterialReceive">
+        update sk_material_receive
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="materialNumber != null">material_number =
+                #{materialNumber},
+            </if>
+            <if test="materialStock != null">material_stock =
+                #{materialStock},
+            </if>
+            <if test="materialStockName != null">material_stock_name =
+                #{materialStockName},
+            </if>
+            <if test="supplierCode != null">supplier_code =
+                #{supplierCode},
+            </if>
+            <if test="productionPlan != null">production_plan =
+                #{productionPlan},
+            </if>
+            <if test="receivePerson != null">receive_person =
+                #{receivePerson},
+            </if>
+            <if test="receiveDept != null">receive_dept =
+                #{receiveDept},
+            </if>
+            <if test="receiveTime != null">receive_time =
+                #{receiveTime},
+            </if>
+            <if test="receiveTotal != null">receive_total =
+                #{receiveTotal},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="status != null">status =
+                #{status},
+            </if>
+            <if test="approvePerson != null">approve_person =
+                #{approvePerson},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            update_time = NOW()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteMaterialReceiveById" parameterType="Long">
+        update sk_material_receive set status = '0' where id = #{id}
+    </update>
+
+    <update id="deleteMaterialReceiveByIds" parameterType="String">
+        update sk_material_receive set status = '0' where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxMaterialReceiveCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(material_number, #{code}, '')+0)) maxCode FROM sk_material_receive WHERE material_number REGEXP CONCAT(#{code},'[0-9]*$')
+    </select>
+
+    <select id="selectMaterialReceiveDetailList" parameterType="MaterialReceiveDetail"
+            resultMap="MaterialReceiveDetailResult">
+        <include refid="selectMaterialReceiveDetailVo"/>
+        <where>
+            <if test="materialNumber != null  and materialNumber != ''">
+                and material_number = #{materialNumber}
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and contract_number = #{contractNumber}
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce = #{produce}
+            </if>
+            <if test="material != null  and material != ''">
+                and material = #{material}
+            </if>
+            <if test="type != null  and type != ''">
+                and type = #{type}
+            </if>
+            <if test="quality != null  and quality != ''">
+                and quality = #{quality}
+            </if>
+            <if test="modulusToothNumber != null  and modulusToothNumber != ''">
+                and modulus_tooth_number = #{modulusToothNumber}
+            </if>
+            <if test="specifications != null  and specifications != ''">
+                and specifications = #{specifications}
+            </if>
+            <if test="model != null  and model != ''">
+                and model = #{model}
+            </if>
+            <if test="availableNum != null ">
+                and available_num = #{availableNum}
+            </if>
+            <if test="unclaimedNum != null ">
+                and unclaimed_num = #{unclaimedNum}
+            </if>
+            <if test="receiveNum != null ">
+                and receive_num = #{receiveNum}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectMaterialReceiveDetailById" parameterType="Long" resultMap="MaterialReceiveDetailResult">
+        <include refid="selectMaterialReceiveDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertMaterialReceiveDetail" parameterType="MaterialReceiveDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_material_receive_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="produce != null">produce,
+            </if>
+            <if test="material != null">material,
+            </if>
+            <if test="type != null">`type`,
+            </if>
+            <if test="quality != null">quality,
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number,
+            </if>
+            <if test="specifications != null">specifications,
+            </if>
+            <if test="model != null">model,
+            </if>
+            <if test="availableNum != null">available_num,
+            </if>
+            <if test="unclaimedNum != null">unclaimed_num,
+            </if>
+            <if test="receiveNum != null">receive_num,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="produce != null">#{produce},
+            </if>
+            <if test="material != null">#{material},
+            </if>
+            <if test="type != null">#{type},
+            </if>
+            <if test="quality != null">#{quality},
+            </if>
+            <if test="modulusToothNumber != null">#{modulusToothNumber},
+            </if>
+            <if test="specifications != null">#{specifications},
+            </if>
+            <if test="model != null">#{model},
+            </if>
+            <if test="availableNum != null">#{availableNum},
+            </if>
+            <if test="unclaimedNum != null">#{unclaimedNum},
+            </if>
+            <if test="receiveNum != null">#{receiveNum},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            NOW()
+        </trim>
+    </insert>
+
+    <insert id="insertMaterialReceiveDetailBatch" parameterType="MaterialReceiveDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_material_receive_detail(material_number,contract_number,produce,material,`type`,quality,modulus_tooth_number,
+                specifications, model, available_num, unclaimed_num, receive_num, create_by, create_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.materialNumber},#{item.contractNumber},#{item.produce},#{item.material},#{item.type},#{item.quality},
+            #{item.modulusToothNumber},#{item.specifications}#{item.model},#{item.availableNum},#{item.unclaimedNum},#{item.receiveNum},
+            #{item.createBy},NOW())
+        </foreach>
+    </insert>
+
+    <update id="updateMaterialReceiveDetail" parameterType="MaterialReceiveDetail">
+        update sk_material_receive_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="materialNumber != null">material_number =
+                #{materialNumber},
+            </if>
+            <if test="contractNumber != null">contract_number =
+                #{contractNumber},
+            </if>
+            <if test="produce != null">produce =
+                #{produce},
+            </if>
+            <if test="material != null">material =
+                #{material},
+            </if>
+            <if test="type != null">type =
+                #{type},
+            </if>
+            <if test="quality != null">quality =
+                #{quality},
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number =
+                #{modulusToothNumber},
+            </if>
+            <if test="specifications != null">specifications =
+                #{specifications},
+            </if>
+            <if test="model != null">model =
+                #{model},
+            </if>
+            <if test="availableNum != null">available_num =
+                #{availableNum},
+            </if>
+            <if test="unclaimedNum != null">unclaimed_num =
+                #{unclaimedNum},
+            </if>
+            <if test="receiveNum != null">receive_num =
+                #{receiveNum},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteMaterialReceiveDetailById" parameterType="Long">
+        delete
+        from sk_material_receive_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteMaterialReceiveDetailByIds" parameterType="String">
+        delete from sk_material_receive_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

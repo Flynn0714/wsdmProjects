@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Wisdom.iml" filepath="$PROJECT_DIR$/.idea/Wisdom.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-admin/wsdm-admin.iml" filepath="$PROJECT_DIR$/wsdm-admin/wsdm-admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-common/wsdm-common.iml" filepath="$PROJECT_DIR$/wsdm-common/wsdm-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-framework/wsdm-framework.iml" filepath="$PROJECT_DIR$/wsdm-framework/wsdm-framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-generator/wsdm-generator.iml" filepath="$PROJECT_DIR$/wsdm-generator/wsdm-generator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-stock/wsdm-stock.iml" filepath="$PROJECT_DIR$/wsdm-stock/wsdm-stock.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wsdm-system/wsdm-system.iml" filepath="$PROJECT_DIR$/wsdm-system/wsdm-system.iml" />
+    </modules>
+  </component>
+</project>

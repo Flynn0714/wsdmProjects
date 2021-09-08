@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderGatheringMapper">
+
+    <resultMap type="SalesOrderGathering" id="SalesOrderGatheringResult">
+        <result property="id" column="id"/>
+        <result property="gatheringNumber" column="gathering_number"/>
+        <result property="deliveryNumber" column="delivery_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="gatheringAmount" column="gathering_amount"/>
+        <result property="gatheringDate" column="gathering_date"/>
+        <result property="deliveryDate" column="deliveryDate"/>
+        <result property="deliveryAmount" column="deliveryAmount"/>
+        <result property="remark" column="remark"/>
+        <result property="gatheringStatus" column="gathering_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderGatheringInfo" id="SalesOrderGatheringInfoResult">
+        <result property="id" column="id"/>
+        <result property="gatheringNumber" column="gathering_number"/>
+        <result property="deliveryNumber" column="delivery_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="gatheringAmount" column="gathering_amount"/>
+        <result property="gatheringDate" column="gathering_date"/>
+        <result property="remark" column="remark"/>
+        <result property="gatheringStatus" column="gathering_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approve" column="approve"/>
+        <result property="approveTime" column="approve_time"/>
+
+        <result property="deliveryDate" column="deliveryDate"/>
+        <result property="deliveryAmount" column="deliveryAmount"/>
+        <result property="gatheringStatusName" column="gatheringStatusName"/>
+        <result property="customerName" column="customerName"/>
+        <result property="approveName" column="approveName"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderGatheringDetails" id="SalesOrderGatheringDetailsResult">
+        <result property="id" column="id"/>
+        <result property="gatheringNumber" column="gathering_number"/>
+        <result property="paymentMethod" column="paymentMethod"/>
+        <result property="receivingBank" column="receivingBank"/>
+        <result property="payeeAmount" column="payeeAmount"/>
+        <result property="accountNumber" column="accountNumber"/>
+        <result property="paymentMethodName" column="paymentMethodName"/>
+        <result property="receivingBankName" column="receivingBankName"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSalesOrderGatheringVo">
+        select id,
+               gathering_number,
+               delivery_number,
+               sales_number,
+               customer,
+               gathering_amount,
+               gathering_date,
+               remark,
+               gathering_status,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               approve,
+               approve_time
+        from sales_order_gathering
+    </sql>
+
+    <select id="selectSalesOrderGatheringList" parameterType="SalesOrderGatheringQuery" resultMap="SalesOrderGatheringInfoResult">
+        SELECT
+            sog.id,
+            sog.gathering_number,
+            sog.sales_number,
+            sog.delivery_number,
+            sog.customer,
+            sog.gathering_status,
+            concat( sc.customer_number, '.', sc.customer_name ) AS customerName,
+            sdd.dict_label AS gatheringStatusName,
+            sog.gathering_date,
+            sod.delivery_date AS deliveryDate,
+            sod.delivery_amount AS deliveryAmount,
+        IFNULL((select sum(payee_amount) from sales_order_gathering_details where gathering_number = sog.gathering_number),0.00) AS gathering_amount,
+            u.nick_name AS create_by,
+            sog.create_time
+        FROM sales_order_gathering sog
+        LEFT JOIN sales_order_delivery sod ON sod.delivery_number = sog.delivery_number and sod.delivery_status = '2'
+        LEFT JOIN sys_user u ON u.user_name = sog.create_by
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sog.customer
+        left join sys_dict_data sdd on sdd.dict_value = sog.gathering_status and sdd.dict_type = 'dict_sale_order_status'
+        <where>
+            <if test="gatheringNumber != null  and gatheringNumber != ''">
+                and sog.gathering_number like concat('%', #{gatheringNumber}, '%')
+            </if>
+            <if test="deliveryNumber != null  and deliveryNumber != ''">
+                and sog.delivery_number like concat('%', #{deliveryNumber}, '%')
+            </if>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and sog.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and sog.customer = #{customer}
+            </if>
+            <if test="gatheringDateStart != null and gatheringDateEnd != null">
+                and sog.gathering_date between #{gatheringDateStart} and #{gatheringDateEnd}
+            </if>
+            <if test="gatheringStatus != null  and gatheringStatus != ''">
+                and sog.gathering_status = #{gatheringStatus}
+            </if>
+            <if test="deliveryDateStart != null and deliveryDateEnd != null ">
+                and sod.delivery_date between #{deliveryDateStart} and #{deliveryDateEnd}
+            </if>
+        </where>
+        order by sog.create_time DESC , sog.update_time DESC
+    </select>
+
+    <select id="selectSalesOrderGatheringById" parameterType="Long" resultMap="SalesOrderGatheringInfoResult">
+        SELECT
+            sog.id,
+            sog.gathering_number,
+            sog.sales_number,
+            sog.delivery_number,
+            sog.customer,
+            concat( sc.customer_number, '.', sc.customer_name ) AS customerName,
+            sog.gathering_status,
+            sdd.dict_label AS gatheringStatusName,
+            sog.gathering_date,
+            sod.delivery_date AS deliveryDate,
+            sod.delivery_amount AS deliveryAmount ,
+            ifnull(sog.gathering_amount, '0.00') AS gatheringAmount,
+            u1.nick_name AS create_by,
+            sog.create_time,
+            sog.approve,
+            u2.nick_name AS approveName,
+            sog.approve_time
+        FROM sales_order_gathering sog
+        LEFT JOIN sales_order_delivery sod ON sod.delivery_number = sog.delivery_number and sod.delivery_status = '2'
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sog.customer
+        LEFT JOIN sys_user u1 ON u1.user_name = sog.create_by
+        LEFT JOIN sys_user u2 ON u2.user_name = sog.approve
+        left join sys_dict_data sdd on sdd.dict_value = sog.gathering_status and sdd.dict_type = 'dict_sale_order_status'
+        where sog.id = #{id}
+    </select>
+
+    <select id="selectSalesOrderGatheringByCode" parameterType="String" resultMap="SalesOrderGatheringResult">
+        <include refid="selectSalesOrderGatheringVo"/>
+        where gathering_number = #{gatheringNumber}
+    </select>
+
+    <select id="getGatheringDetailsByNumber" parameterType="String" resultType="SalesOrderGatheringDetails">
+        SELECT
+            sogd.id,
+            sogd.gathering_number AS gatheringNumber,
+            sogd.payment_method AS paymentMethod,
+            d1.dict_label AS paymentMethodName,
+            sogd.receiving_bank AS receivingBank,
+            d2.dict_label AS receivingBankName,
+            sogd.payee_amount AS payeeAmount,
+            sogd.account_number AS accountNumber,
+            sogd.remark
+        FROM sales_order_gathering_details sogd
+        LEFT JOIN sys_dict_data d1 on d1.dict_value = sogd.payment_method and d1.dict_type = 'payment_method'
+        LEFT JOIN sys_dict_data d2 on d2.dict_value = sogd.receiving_bank and d2.dict_type = 'payment_bank'
+        where gathering_number = #{gatheringNumber}
+    </select>
+
+    <select id="getMaxGatheringCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(gathering_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_gathering
+        WHERE gathering_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <select id="getGatheringAmount" parameterType="String" resultType="BigDecimal">
+        select sum(gathering_amount) AS gatheringAmount
+        from sales_order_gathering
+        where delivery_number = #{deliveryNumber}
+    </select>
+
+    <select id="getSalesGatheringOrder" resultType="Map" parameterType="String">
+        SELECT
+            sog.sales_number AS salesNumber,
+            sog.delivery_number AS deliveryNumber,
+            sog.gathering_number AS gatheringNumber,
+            sog.customer,
+            concat(sc.customer_number, '.', sc.customer_name) AS customerName,
+            sog.gathering_date AS gatheringDate,
+            sog.gathering_amount AS gatheringAmount,
+            sdd.dict_label AS gatheringStatusName,
+            sog.gathering_status AS gatheringStatus
+        FROM sales_order_gathering sog
+        LEFT JOIN sales_order_customer sc ON sc.customer_number = sog.customer
+        left join sys_dict_data sdd on sdd.dict_value = sog.gathering_status and sdd.dict_type = 'dict_sale_order_status'
+        where sog.gathering_status = '2'
+          and sog.gathering_number not in (select IFNULL(gathering_number,'') from sales_order_billing where billing_status = '2')
+        <if test="salesNumber != null and salesNumber != ''">
+            and sog.sales_number  like concat('%', #{salesNumber}, '%')
+        </if>
+        <if test="customer != null and customer != ''">
+            and sog.customer = #{customer}
+        </if>
+    </select>
+
+    <insert id="insertSalesOrderGathering" parameterType="SalesOrderGathering" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_gathering
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="gatheringNumber != null">gathering_number,
+            </if>
+            <if test="deliveryNumber != null">delivery_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customer != null">customer,
+            </if>
+            <if test="gatheringAmount != null">gathering_amount,
+            </if>
+            <if test="gatheringDate != null">gathering_date,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="gatheringStatus != null">gathering_status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="gatheringNumber != null">#{gatheringNumber},
+            </if>
+            <if test="deliveryNumber != null">#{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="gatheringAmount != null">#{gatheringAmount},
+            </if>
+            <if test="gatheringDate != null">#{gatheringDate},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="gatheringStatus != null">#{gatheringStatus},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertGatheringDetailsBatch" parameterType="SalesOrderGatheringDetails">
+        insert into sales_order_gathering_details(gathering_number, payment_method, receiving_bank, payee_amount, account_number, remark)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.gatheringNumber}, #{item.paymentMethod}, #{item.receivingBank}, #{item.payeeAmount}, #{item.accountNumber}, #{item.remark})
+        </foreach>
+    </insert>
+
+    <update id="updateSalesOrderGathering" parameterType="SalesOrderGathering">
+        update sales_order_gathering
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="gatheringNumber != null">gathering_number =
+                #{gatheringNumber},
+            </if>
+            <if test="deliveryNumber != null">delivery_number =
+                #{deliveryNumber},
+            </if>
+            <if test="salesNumber != null">sales_number =
+                #{salesNumber},
+            </if>
+            <if test="customer != null">customer =
+                #{customer},
+            </if>
+            <if test="gatheringAmount != null">gathering_amount =
+                #{gatheringAmount},
+            </if>
+            <if test="gatheringDate != null">gathering_date =
+                #{gatheringDate},
+            </if>
+            remark = #{remark},
+            <if test="gatheringStatus != null">gathering_status =
+                #{gatheringStatus},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+            <if test="approve != null">approve =
+                #{approve},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateGatheringDetailsBatch" parameterType="SalesOrderGatheringDetails">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+          update sales_order_gathering_details
+          set payment_method = #{item.paymentMethod},
+              receiving_bank = #{item.receivingBank},
+              payee_amount = #{item.payeeAmount},
+              account_number = #{item.accountNumber},
+              remark = #{item.remark}
+          where id = #{item.id}
+        </foreach>
+    </update>
+
+    <update id="deleteSalesOrderGatheringById" parameterType="Long">
+        update sales_order_gathering set gathering_status = '-1' where id = #{id}
+    </update>
+
+    <delete id="deleteSalesOrderGatheringByIds" parameterType="String">
+        delete from sales_order_gathering where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSalesOrderGatheringDetailsByIds" parameterType="SalesOrderGatheringDetails">
+        delete from sales_order_gathering_details where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+
+</mapper>

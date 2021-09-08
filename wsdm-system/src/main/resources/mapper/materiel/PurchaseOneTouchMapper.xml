@@ -1,0 +1,114 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchaseOneTouchMapper">
+    <resultMap id="semiProduceEntity" type="SemiProduceEntity">
+        <result property="semiProduceName" column="semi_produce_name"/>
+        <result property="semiProduceNumber" column="semi_produce_number"/>
+        <result property="semiProduceModel" column="semi_produce_model"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+    </resultMap>
+
+
+    <select id="selectProductQuantity" resultType="java.util.Map">
+        select * from
+                (select  md.sales_number ,
+                (case when md.details_type='C' then pm.produce_number
+                when md.details_type='B' then semi_produce_number end) material_number,
+                md.details_type code,
+                cast(ifnull(md.quantity ,0)-ifnull(dd.delivered_quantity,0) as SIGNED) num
+                from sales_order_manage_details md
+                left join  sales_order_delivery_details dd on dd.order_details_id  = md.id
+                left join  sales_order_manage m on md.sales_number = m.sales_number
+                left join  sales_order_delivery d on dd.delivery_number =d.delivery_number
+                left join  pd_association pa on pa.material_number=md.material_number
+                left join  pd_produce_manage pm on pa.details_type ='C' and pa.pd_id =pm.id
+                left join pd_semi_produce_manage ps on pa.details_type ='B' and pa.pd_id =ps.id
+                where (m.status =2 or d.delivery_status =2) and (m.automatically_generate_tags!='1' or m.automatically_generate_tags is null)
+                and pa.status = '1') a
+        where a.num!=0
+        order by sales_number
+
+    </select>
+
+    <select id="selectStockNumber" resultType="java.util.Map">
+        select
+        code,
+        produce ,
+        cast(stock_available_num as SIGNED) stock_available_num
+        from sk_stock ss
+        where code in ('A','B')
+        and stock_available_num != 0
+    </select>
+
+    <select id="selectHardwareStockNumber" resultType="java.util.Map">
+        select
+        produce ,
+        cast(stock_available_num as SIGNED) stock_available_num
+        from sk_stock ss
+        where code = 'D'
+        and stock_available_num != 0
+    </select>
+
+    <select id="selectSemiProduceNumber" resultType="java.util.Map">
+        select
+        #{salesNumber} sales_number,
+        ps.semi_produce_number  material_number,
+        'B' code,
+        cast(pd.num as SIGNED) num
+        from pd_produce_details pd
+        left join pd_semi_produce_manage ps on ps.id = pd.`ref`
+        where pd.produce = #{finishedProductNo} and pd.`type` =1;
+    </select>
+
+    <select id="selectHardwareList" resultType="java.util.Map">
+        select
+        #{salesNumber} sales_number,
+        ph.type_name ,
+        ph.model ,
+        ph.code,
+        cast(pd.num as SIGNED) num
+        from pd_produce_details pd
+        left join pd_produce_hardware ph on ph.id = pd.`ref`
+        where pd.produce = #{finishedProductNo} and pd.`type` =2;
+    </select>
+
+
+    <update id="updateSalesOrderTags" parameterType="java.util.Set">
+        <foreach collection="set" item="salesNumber" index="index" open="" close="" separator=";">
+            update sales_order_manage
+            <set>
+                automatically_generate_tags = '1'
+            </set>
+            <where>
+                sales_number = #{salesNumber}
+            </where>
+        </foreach>
+    </update>
+
+
+    <insert id="insertSalesOrderAutomaticallyGenerate" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT INTO sales_order_automatically_generate
+        ( sales_number, material_number, code, num, create_time, use_user)
+        VALUES
+        <foreach collection="aList" item="a" separator=",">
+        (
+        #{a.salesNumber}, #{a.materialNumber}, #{a.code},
+        #{a.num}, #{a.createTime}, #{a.useUser}
+        )
+        </foreach>
+    </insert>
+
+
+    <select id="selectSemiProduceEntity" parameterType="java.util.List" resultMap="semiProduceEntity">
+        select * from pd_semi_produce_manage pspm
+        where
+        <foreach collection="materialNumber" item="m" index="index" open="(" close=")" separator="or">
+             semi_produce_number =#{m}
+        </foreach>
+        and status =0
+    </select>
+
+</mapper>

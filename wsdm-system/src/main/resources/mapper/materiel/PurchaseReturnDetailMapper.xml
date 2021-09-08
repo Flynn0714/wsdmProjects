@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchaseReturnDetailMapper">
+
+    <resultMap type="PurchaseReturnDetail" id="PurchaseReturnDetailResult">
+        <result property="id" column="id"/>
+        <result property="itemNo" column="item_no"/>
+        <result property="returnNumber" column="return_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="materialName" column="material_name"/>
+        <result property="modelParam" column="model_param"/>
+        <result property="wlType" column="wl_type"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="weight" column="weight"/>
+        <result property="valuationWay" column="valuation_way"/>
+        <result property="unit" column="unit"/>
+        <result property="price" column="price"/>
+        <result property="receivedQuantity" column="received_quantity"/>
+        <result property="returnQuantity" column="return_quantity"/>
+        <result property="amount" column="amount"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="otherAmount" column="other_amount"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectPurchaseReturnDetailVo">
+    select
+    id,
+    return_number,
+    contract_number,
+    material_number,
+    material_name,
+    model_param,
+    wl_type,
+    material_quality,
+    weight,
+    valuation_way,
+    unit,
+    price,
+    received_quantity,
+    return_quantity,
+    amount,
+    create_by,
+    create_time,
+    update_by,
+    update_time,
+    other_amount,
+    remark
+    from wl_return_order_detail
+    </sql>
+
+    <select id="selectPurchaseReturnDetailList" parameterType="PurchaseReturnDetail" resultMap="PurchaseReturnDetailResult">
+        <include refid="selectPurchaseReturnDetailVo"/>
+        <if test="materialNumber != null">
+            and material_number = #{materialNumber}
+        </if>
+        <if test="materialName != null">
+            and material_name = #{materialName}
+        </if>
+        <if test="modelParam != null">
+            and model_param = #{modelParam}
+        </if>
+        <if test="receivedQuantity != null">
+            and received_quantity = #{receivedQuantity}
+        </if>
+        <if test="returnQuantity != null">
+            and return_quantity = #{returnQuantity}
+        </if>
+        <if test="price != null">
+            and price = #{price}
+        </if>
+        <if test="amount != null">
+            and amount = #{amount}
+        </if>
+        <if test="otherAmount != null">
+            and other_amount = #{otherAmount}
+        </if>
+        <if test="remark != null">
+            and remark = #{remark}
+        </if>
+
+    </select>
+    <insert id="insertReturnDetailBatch" parameterType="PurchaseReturnDetail" useGeneratedKeys="true" keyProperty="id">
+        insert into wl_return_order_detail(
+        item_no,
+        return_number,
+        material_number,
+        material_name,
+        model_param,
+        wl_type,
+        material_quality,
+        weight,
+        valuation_way,
+        price,
+        received_quantity,
+        return_quantity,
+        amount,
+        update_by,
+        update_time,
+        create_by,
+        create_time,
+        other_amount,
+        remark
+        ) values
+
+        <foreach collection="list" item="purchaseReturnDetail" index="index" separator=",">
+            (
+            #{purchaseReturnDetail.itemNo},
+            #{purchaseReturnDetail.returnNumber},
+            #{purchaseReturnDetail.materialNumber},
+            #{purchaseReturnDetail.materialName},
+            #{purchaseReturnDetail.modelParam},
+            #{purchaseReturnDetail.wlType},
+            #{purchaseReturnDetail.materialQuality},
+            #{purchaseReturnDetail.weight},
+            #{purchaseReturnDetail.valuationWay},
+            #{purchaseReturnDetail.price},
+            #{purchaseReturnDetail.receivedQuantity},
+            #{purchaseReturnDetail.returnQuantity},
+            #{purchaseReturnDetail.amount},
+            #{purchaseReturnDetail.updateBy},
+            #{purchaseReturnDetail.updateTime},
+            #{purchaseReturnDetail.createBy},
+            #{purchaseReturnDetail.createTime},
+            #{purchaseReturnDetail.otherAmount},
+            #{purchaseReturnDetail.remark}
+            )
+        </foreach>
+
+    </insert>
+
+    <delete id="deleteReturnDetail" parameterType="String" >
+        delete
+        from wl_return_order_detail
+        where return_number = #{returnNumber}
+    </delete>
+
+    <select id="selectReturnOrderDetailByReturnNumber" parameterType="String" resultMap="PurchaseReturnDetailResult">
+        <include refid="selectPurchaseReturnDetailVo"/>
+        where return_number = #{returnNumber}
+    </select>
+
+    <select id="queryReturnedNum" resultType="Integer">
+        SELECT
+        SUM(a.return_quantity)
+        FROM
+        wl_return_order_detail a
+        LEFT JOIN wl_return_order_info b ON a.return_number = b.return_number
+        WHERE
+        b.receive_number = #{receiveNumber}
+        <if test="purchaseReturnDetail.contractNumber != null and purchaseReturnDetail.contractNumber != ''">
+            and a.contract_number = #{purchaseReturnDetail.contractNumber}
+        </if>
+        <if test="purchaseReturnDetail.materialNumber != null and purchaseReturnDetail.materialNumber != ''">
+            and a.material_number = #{purchaseReturnDetail.materialNumber}
+        </if>
+        AND b.status = '2';
+    </select>
+
+
+
+
+
+
+
+
+
+</mapper>

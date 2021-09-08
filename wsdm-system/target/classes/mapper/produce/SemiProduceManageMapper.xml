@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.produce.mapper.SemiProduceManageMapper">
+
+    <resultMap type="SemiProduceManage" id="SemiProduceManageResult">
+        <result property="id" column="id"/>
+        <result property="semiProduceName" column="semi_produce_name"/>
+        <result property="semiProduceNumber" column="semi_produce_number"/>
+        <result property="semiProduceModel" column="semi_produce_model"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+        <result property="num" column="num"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSemiProduceManageVo">
+        select id,
+               semi_produce_name,
+               semi_produce_number,
+               semi_produce_model,
+               material_quality,
+               modulus_tooth_number,
+               specifications,
+               status,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from pd_semi_produce_manage
+    </sql>
+
+    <select id="selectSemiProduceManageList" parameterType="SemiProduceManage" resultMap="SemiProduceManageResult">
+        <include refid="selectSemiProduceManageVo"/>
+        <where>
+            <if test="semiProduceName != null  and semiProduceName != ''">
+                and semi_produce_name like concat('%', #{semiProduceName}, '%')
+            </if>
+            <if test="semiProduceNumber != null  and semiProduceNumber != ''">
+                and semi_produce_number = #{semiProduceNumber}
+            </if>
+            <if test="semiProduceModel != null  and semiProduceModel != ''">
+                and semi_produce_model = #{semiProduceModel}
+            </if>
+            <if test="materialQuality != null  and materialQuality != ''">
+                and material_quality = #{materialQuality}
+            </if>
+            <if test="modulusToothNumber != null  and modulusToothNumber != ''">
+                and modulus_tooth_number = #{modulusToothNumber}
+            </if>
+            <if test="specifications != null  and specifications != ''">
+                and specifications = #{specifications}
+            </if>
+            <if test="status != null  and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSemiProduceManageById" parameterType="Long" resultMap="SemiProduceManageResult">
+        <include refid="selectSemiProduceManageVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getSemiProduceByProduceNumber" parameterType="String" resultMap="SemiProduceManageResult">
+        SELECT s.id, s.semi_produce_name, s.semi_produce_number, s.semi_produce_model, s.material_quality,
+               s.modulus_tooth_number, s.specifications, d.num, s.status
+        FROM pd_produce_details d
+        LEFT JOIN pd_semi_produce_manage s ON d.ref = s.semi_produce_number
+        WHERE d.`type` = '1' AND d.produce = #{produceNumber}
+    </select>
+
+    <insert id="insertSemiProduceManage" parameterType="SemiProduceManage">
+        insert into pd_semi_produce_manage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,
+            </if>
+            <if test="semiProduceName != null">semi_produce_name,
+            </if>
+            <if test="semiProduceNumber != null">semi_produce_number,
+            </if>
+            <if test="semiProduceModel != null">semi_produce_model,
+            </if>
+           material_quality,
+
+            modulus_tooth_number,
+
+            specifications,
+
+            <if test="status != null">status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},
+            </if>
+            <if test="semiProduceName != null">#{semiProduceName},
+            </if>
+            <if test="semiProduceNumber != null">#{semiProduceNumber},
+            </if>
+            <if test="semiProduceModel != null">#{semiProduceModel},
+            </if>
+            #{materialQuality},
+
+            #{modulusToothNumber},
+
+            #{specifications},
+
+            <if test="status != null">#{status},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertSemiProduceManageBatch" parameterType="SemiProduceManage" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_semi_produce_manage (semi_produce_name, semi_produce_number, semi_produce_model,
+        material_quality, modulus_tooth_number, specifications, status, create_by, create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.semiProduceName}, #{item.semiProduceNumber}, #{item.semiProduceModel}, #{item.materialQuality},
+            #{item.modulusToothNumber}, #{item.specifications}, #{item.status}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateSemiProduceManage" parameterType="SemiProduceManage">
+        update pd_semi_produce_manage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="semiProduceName != null">
+                semi_produce_name =  #{semiProduceName},
+            </if>
+            <if test="semiProduceNumber != null">
+                semi_produce_number = #{semiProduceNumber},
+            </if>
+            <if test="semiProduceModel != null">
+                semi_produce_model = #{semiProduceModel},
+            </if>
+            <if test="materialQuality != null">
+                material_quality = #{materialQuality},
+            </if>
+            <if test="specifications != null">
+                specifications = #{specifications},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createBy != null">
+                create_by = #{createBy},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteSemiProduceManageById" parameterType="Long">
+        update pd_semi_produce_manage set status = '1'
+        where id = #{id}
+    </update>
+
+    <update id="deleteSemiProduceManageByIds" parameterType="String">
+        update pd_semi_produce_manage set status = '1'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getSemiInfoBySemiNumber" parameterType="String" resultMap="SemiProduceManageResult">
+        <include refid="selectSemiProduceManageVo"/>
+        where semi_produce_number = #{semiProduceNumber}
+    </select>
+
+    <select id="semiInfoByListBySemiNumber" resultMap="SemiProduceManageResult">
+        <include refid="selectSemiProduceManageVo"/>
+        where semi_produce_number in
+        <foreach item="semiProduceNumber" collection="list" open="(" separator="," close=")">
+            #{semiProduceNumber}
+        </foreach>
+    </select>
+
+</mapper>

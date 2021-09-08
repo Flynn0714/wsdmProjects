@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.ReceiveOrderInfoMapper">
+
+    <resultMap type="ReceiveOrderInfo" id="ReceiveOrderInfoResult">
+        <result property="id" column="id"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="purchaseNumber" column="purchase_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contacts" column="contacts"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="purchaseDate" column="purchase_date"/>
+        <result property="arrivalDate" column="arrival_date"/>
+        <result property="consignee" column="consignee"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="totalPurchaseNum" column="total_purchase_num"/>
+        <result property="totalReceiveNum" column="total_receive_num"/>
+        <result property="isCheck" column="is_check"/>
+        <result property="checkNumber" column="check_number"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="qualifiedNum" column="qualified_num"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="ReceiveOrderInfoVo" id="ReceiveOrderInfoVoResult">
+        <result property="id" column="id"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="purchaseNumber" column="purchase_number"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="contacts" column="contacts"/>
+        <result property="contactNumber" column="contact_number"/>
+        <result property="purchaseDate" column="purchase_date"/>
+        <result property="arrivalDate" column="arrival_date"/>
+        <result property="consignee" column="consignee"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="totalPurchaseNum" column="total_purchase_num"/>
+        <result property="totalReceiveNum" column="total_receive_num"/>
+        <result property="isCheck" column="is_check"/>
+        <result property="checkNumber" column="check_number"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="qualifiedNum" column="qualified_num"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectReceiveOrderInfoVo">
+        select
+            wroi.id,
+            wroi.receive_number,
+            wroi.purchase_number,
+            wroi.supplier_code,
+            ws.supplier_name AS supplierName,
+            wroi.contacts,
+            wroi.contact_number,
+            wroi.purchase_date,
+            wroi.arrival_date,
+            wroi.purchase_type,
+            sdd1.dict_label AS purchaseTypeName,
+            wroi.total_purchase_num,
+            wroi.total_receive_num,
+            wroi.is_check,
+            case wroi.is_check when 0 then '需要'
+               when 1 then '不需要'
+               else ''
+               end AS isCheckDesc,
+            wroi.check_number,
+            wroi.check_num,
+            wroi.qualified_num,
+            wroi.remark,
+            wroi.status,
+            sdd2.dict_label AS statusName,
+            u1.nick_name AS create_by,
+            u2.nick_name AS update_by,
+            u3.nick_name AS audit_by,
+            wroi.audit_time,
+            wroi.create_time,
+            wroi.update_time
+        from wl_receive_order_info wroi
+         left join wl_supplier ws on wroi.supplier_code = ws.supplier_code
+         left join sys_dict_data sdd1 on wroi.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+         left join sys_dict_data sdd2 on wroi.status = sdd2.dict_value and sdd2.dict_type = 'dict_purchase_receive_status'
+         left join sys_user u1 on u1.user_name = wroi.create_by
+         left join sys_user u2 on u2.user_name = wroi.update_by
+         left join sys_user u3 on u3.user_name = wroi.audit_by
+    </sql>
+
+    <select id="selectReceiveOrderInfoList" parameterType="ReceiveOrderInfo" resultMap="ReceiveOrderInfoResult">
+        <include refid="selectReceiveOrderInfoVo"/>
+        <where>
+            <if test="receiveNumber != null  and receiveNumber != ''">
+                and wroi.receive_number like concat('%', #{receiveNumber}, '%')
+            </if>
+            <if test="purchaseNumber != null  and purchaseNumber != ''">
+                and wroi.purchase_number like concat('%', #{purchaseNumber}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and wroi.supplier_code = #{supplierCode}
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and wroi.purchase_type = #{purchaseType}
+            </if>
+            <if test="purchaseStartDate != null">
+                and wroi.purchase_date &gt;= #{purchaseStartDate}
+            </if>
+            <if test="purchaseEndDate != null">
+                and wroi.purchase_date &lt;= #{purchaseEndDate}
+            </if>
+            <if test="receiveStartDate != null">
+                and wroi.arrival_date >= #{receiveStartDate}
+            </if>
+            <if test="receiveEndDate != null">
+                and wroi.arrival_date &lt;= #{receiveEndDate}
+            </if>
+            <if test="status != null  and status != ''">
+                and wroi.status = #{status}
+            </if>
+        </where>
+        order by wroi.receive_number desc
+    </select>
+
+    <select id="selectListForPay" parameterType="ReceiveOrderInfo" resultMap="ReceiveOrderInfoResult">
+        select
+        wroi.receive_number,
+        wroi.purchase_number,
+        wroi.supplier_code,
+        ws.supplier_name AS supplierName,
+        wroi.arrival_date,
+        @tpa := IFNULL((select sum(total_pay_amount) from wl_purchase_supplier_pay_info where receive_number = wroi.receive_number and status = '2'),0.00) AS totalPaidAmount,
+        @tra := IFNULL((SELECT sum(CONVERT((rod.receive_num * pod.unit_price),DECIMAL(16,2))) FROM wl_receive_order_detail rod
+        LEFT JOIN wl_purchase_order_detail pod ON rod.materiel_number = pod.materiel_number
+        where rod.receive_number = wroi.receive_number), 0.00) AS totalReceiveAmount,
+        CONVERT((@tra - @tpa),DECIMAL(16,2)) AS totalOutstandingAmount
+        from wl_receive_order_info wroi
+        left join wl_supplier ws on wroi.supplier_code = ws.supplier_code
+        <where>
+            wroi.status = '3'
+            <if test="receiveNumber != null  and receiveNumber != ''">
+                and wroi.receive_number like concat('%', #{receiveNumber}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and wroi.supplier_code = #{supplierCode}
+            </if>
+        </where>
+        HAVING totalPaidAmount &lt; totalReceiveAmount
+        order by wroi.receive_number desc
+    </select>
+
+    <select id="selectReceiveOrderInfoById" parameterType="Long" resultMap="ReceiveOrderInfoVoResult">
+        <include refid="selectReceiveOrderInfoVo"/>
+        WHERE wroi.id = #{id}
+    </select>
+
+    <select id="selectReceiveOrderInfoByReceiveNumber" parameterType="String" resultMap="ReceiveOrderInfoVoResult">
+        <include refid="selectReceiveOrderInfoVo"/>
+        WHERE wroi.receive_number = #{receiveNumber}
+    </select>
+
+    <select id="selectReceiveOrderInfoByCheckNumber" parameterType="String" resultMap="ReceiveOrderInfoVoResult">
+        <include refid="selectReceiveOrderInfoVo"/>
+        WHERE wroi.check_number = #{checkNumber}
+    </select>
+
+    <select id="getMaxReceiveCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(receive_number, #{code}, '') + 0)) maxCode
+        FROM wl_receive_order_info
+        WHERE receive_number REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+
+    <insert id="insertReceiveOrderInfo" parameterType="ReceiveOrderInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_order_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="receiveNumber != null">receive_number,
+            </if>
+            <if test="purchaseNumber != null">purchase_number,
+            </if>
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="contacts != null">contacts,
+            </if>
+            <if test="contactNumber != null">contact_number,
+            </if>
+            <if test="purchaseDate != null">purchase_date,
+            </if>
+            <if test="arrivalDate != null">arrival_date,
+            </if>
+            <if test="purchaseType != null">purchase_type,
+            </if>
+            <if test="totalPurchaseNum != null">total_purchase_num,
+            </if>
+            <if test="totalReceiveNum != null">total_receive_num,
+            </if>
+            <if test="isCheck != null">is_check,
+            </if>
+            <if test="checkNumber != null">check_number,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="receiveNumber != null">#{receiveNumber},
+            </if>
+            <if test="purchaseNumber != null">#{purchaseNumber},
+            </if>
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="contacts != null">#{contacts},
+            </if>
+            <if test="contactNumber != null">#{contactNumber},
+            </if>
+            <if test="purchaseDate != null">#{purchaseDate},
+            </if>
+            <if test="arrivalDate != null">#{arrivalDate},
+            </if>
+            <if test="purchaseType != null">#{purchaseType},
+            </if>
+            <if test="totalPurchaseNum != null">#{totalPurchaseNum},
+            </if>
+            <if test="totalReceiveNum != null">#{totalReceiveNum},
+            </if>
+            <if test="isCheck != null">#{isCheck},
+            </if>
+            <if test="checkNumber != null">#{checkNumber},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateReceiveOrderInfo" parameterType="ReceiveOrderInfo">
+        update wl_receive_order_info
+        set
+            contacts = #{contacts},
+            contact_number = #{contactNumber},
+            total_receive_num = #{totalReceiveNum},
+            is_check = #{isCheck},
+            remark = #{remark},
+            <if test="checkNumber != null">
+                check_number = #{checkNumber},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            status = #{status}
+        where id = #{id}
+    </update>
+
+    <update id="updateReceiveStatus" parameterType="ReceiveOrderInfoVo">
+        update wl_receive_order_info
+        set
+        status = #{status},
+        audit_by = #{auditBy},
+        <if test="checkNumber != null">
+            check_number = #{checkNumber},
+        </if>
+        <if test="checkNum != null">
+            check_num = #{checkNum},
+        </if>
+        <if test="qualifiedNum != null">
+            qualified_num = #{qualifiedNum},
+        </if>
+        <if test="updateBy != null">
+            update_by = #{updateBy},
+        </if>
+        <if test="updateTime != null">
+            update_time = #{updateTime},
+        </if>
+
+        audit_time = #{auditTime}
+        <where>
+            <if test="receiveNumber != null  and receiveNumber != ''">
+                and receive_number = #{receiveNumber}
+            </if>
+            <if test="checkNumber != null  and checkNumber != ''">
+                and check_number = #{checkNumber}
+            </if>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <delete id="deleteReceiveOrderInfoById" parameterType="Long">
+        delete
+        from wl_receive_order_info
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteReceiveOrderInfoByIds" parameterType="String">
+        delete from wl_receive_order_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

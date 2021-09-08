@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.PurchasePayOrderInfoMapper">
+
+    <resultMap type="PurchasePayOrderInfo" id="PurchasePayOrderInfoResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="payableAmount" column="payable_amount"/>
+        <result property="totalPayAmount" column="total_pay_amount"/>
+        <result property="totalTransactionAmount" column="total_transaction_amount"/>
+        <result property="lastPayer" column="last_payer"/>
+        <result property="lastTradingTime" column="last_trading_time"/>
+        <result property="lastPayTime" column="last_pay_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectPurchasePayOrderInfo">
+        select
+            poi.id,
+            poi.supplier_code,
+            ws.supplier_name AS supplierName,
+            (SELECT dict_label FROM sys_dict_data WHERE dict_type = 'dict_purchase_type' AND dict_value = ws.supplier_type) AS supplierTypeName,
+            (SELECT dict_label FROM sys_dict_data WHERE dict_type = 'dict_supplier_level' AND dict_value = ws.supplier_level) AS supplierLevelName,
+            ws.contacts,
+            ws.contact_number AS contactNumber,
+            poi.payable_amount,
+            poi.total_transaction_amount,
+            poi.total_pay_amount,
+            u1.nick_name AS create_by,
+            u2.nick_name AS update_by,
+            u3.nick_name AS last_payer,
+            poi.last_pay_time,
+            poi.last_trading_time,
+            poi.create_time,
+            poi.update_time
+        from wl_purchase_supplier_pay_info poi
+        left join wl_supplier ws on poi.supplier_code = ws.supplier_code
+        left join sys_user u1 on u1.user_name = poi.create_by
+        left join sys_user u2 on u2.user_name = poi.update_by
+        left join sys_user u3 on u3.user_name = poi.last_payer
+    </sql>
+
+    <select id="selectPurchaseDealDetailList" parameterType="PurchasePayOrderInfoVo" resultType="PurchaseDealDetail">
+        select * from purchase_deal_view
+        <where>
+            <if test="dealStartDate != null">
+                and date_format(dealDate,'%y%m%d') &gt;= date_format(#{dealStartDate},'%y%m%d')
+            </if>
+            <if test="dealEndDate != null">
+                and date_format(dealDate,'%y%m%d') &lt;= date_format(#{dealEndDate},'%y%m%d')
+            </if>
+            <if test="dealType != null  and dealType != ''">
+                and `dealType` = #{dealType}
+            </if>
+            <if test="dealNumber != null  and dealNumber != ''">
+                and `dealNumber` like concat('%', #{dealNumber}, '%')
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and `purchaseType` = #{purchaseType}
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and  supplierCode like concat('%', #{supplierCode}, '%')
+            </if>
+            <if test="supplierName != null  and supplierName != ''">
+                and `supplierName` like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="materielNumber != null  and materielNumber != ''">
+                and  materielNumber  like concat('%', #{materielNumber}, '%')
+            </if>
+            <if test="materielName != null  and materielName != ''">
+                and `materielName` like concat('%', #{materielName}, '%')
+            </if>
+        </where>
+        order by dealTime desc,dealNumber desc,itemNo
+    </select>
+
+    <select id="selectPurchaseDealRecordList" parameterType="PurchasePayOrderInfoVo" resultType="PurchaseDealDetail">
+        select * from purchase_deal_record_view
+        <where>
+            <if test="dealStartDate != null">
+                and date_format(dealDate,'%y%m%d') &gt;= date_format(#{dealStartDate},'%y%m%d')
+            </if>
+            <if test="dealEndDate != null">
+                and date_format(dealDate,'%y%m%d') &lt;= date_format(#{dealEndDate},'%y%m%d')
+            </if>
+            <if test="dealType != null  and dealType != ''">
+                and `dealType` = #{dealType}
+            </if>
+            <if test="dealNumber != null  and dealNumber != ''">
+                and `dealNumber` like concat('%', #{dealNumber}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and  supplierCode like concat('%', #{supplierCode}, '%')
+            </if>
+            <if test="supplierName != null  and supplierName != ''">
+                and `supplierName` like concat('%', #{supplierName}, '%')
+            </if>
+        </where>
+        order by dealDate desc,dealNumber desc
+    </select>
+
+    <select id="getTotalDealNumAndAmount" parameterType="PurchasePayOrderInfoVo" resultType="PurchaseDealTableDataInfo">
+        select
+            ifnull(sum(dealNum),0.0) as totalDealNum,
+            ifnull(sum(subtotalAmount),0.00) as totalDealAmount
+        from purchase_deal_view
+        <where>
+            <if test="dealStartDate != null">
+                and date_format(dealDate,'%y%m%d') &gt;= date_format(#{dealStartDate},'%y%m%d')
+            </if>
+            <if test="dealEndDate != null">
+                and date_format(dealDate,'%y%m%d') &lt;= date_format(#{dealEndDate},'%y%m%d')
+            </if>
+            <if test="dealType != null  and dealType != ''">
+                and `dealType` = #{dealType}
+            </if>
+            <if test="dealNumber != null  and dealNumber != ''">
+                and `dealNumber` like concat('%', #{dealNumber}, '%')
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and `purchaseType` = #{purchaseType}
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and  supplierCode like concat('%', #{supplierCode}, '%')
+            </if>
+            <if test="supplierName != null  and supplierName != ''">
+                and `supplierName` like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="materielNumber != null  and materielNumber != ''">
+                and  materielNumber  like concat('%', #{materielNumber}, '%')
+            </if>
+            <if test="materielName != null  and materielName != ''">
+                and `materielName` like concat('%', #{materielName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPurchasePayOrderInfoList" parameterType="PurchasePayOrderInfo"
+            resultMap="PurchasePayOrderInfoResult">
+        <include refid="selectPurchasePayOrderInfo"/>
+        <where>
+            <if test="supplierName != null  and supplierName != ''">
+                and ws.supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and poi.supplier_code  like concat('%', #{supplierCode}, '%')
+            </if>
+        </where>
+        order by poi.last_pay_time desc
+    </select>
+
+    <select id="selectPurchasePayOrderInfoById" parameterType="Long" resultMap="PurchasePayOrderInfoResult">
+        <include refid="selectPurchasePayOrderInfo"/>
+        where poi.id = #{id}
+    </select>
+
+    <select id="getTotalPaidAmountByReceiveNumber" parameterType="String" resultType="BigDecimal">
+        select IFNULL(sum(total_pay_amount),0.00) AS totalPaidAmount
+        from wl_purchase_supplier_pay_info
+        where receive_number = #{receiveNumber} and status = '2'
+    </select>
+
+    <insert id="insertPurchasePayOrderInfo" parameterType="PurchasePayOrderInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_purchase_supplier_pay_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null and supplierCode != ''">supplier_code,
+            </if>
+            <if test="payableAmount != null">payable_amount,
+            </if>
+            <if test="totalPayAmount != null">total_pay_amount,
+            </if>
+            <if test="totalTransactionAmount != null">total_transaction_amount,
+            </if>
+            <if test="lastPayer != null">last_payer,
+            </if>
+            <if test="lastTradingTime != null">last_trading_time,
+            </if>
+            <if test="lastPayTime != null">last_pay_time,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null and supplierCode != ''">#{supplierCode},
+            </if>
+            <if test="payableAmount != null">#{payableAmount},
+            </if>
+            <if test="totalPayAmount != null">#{totalPayAmount},
+            </if>
+            <if test="totalTransactionAmount != null">#{totalTransactionAmount},
+            </if>
+            <if test="lastPayer != null">#{lastPayer},
+            </if>
+            <if test="lastTradingTime != null">#{lastTradingTime},
+            </if>
+            <if test="lastPayTime != null">#{lastPayTime},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updatePurchasePayOrderInfo" parameterType="PurchasePayOrderInfo">
+        update wl_purchase_supplier_pay_info
+        set
+        <if test="lastTradingTime != null">
+            last_trading_time = #{lastTradingTime},
+        </if>
+        <if test="lastPayTime != null">
+            last_pay_time = #{lastPayTime},
+        </if>
+        <if test="totalPayAmount != null">
+            total_pay_amount = #{totalPayAmount},
+        </if>
+        <if test="totalTransactionAmount != null">
+            total_transaction_amount = #{totalTransactionAmount},
+        </if>
+        <if test="lastPayer != null">
+            last_payer = #{lastPayer},
+        </if>
+        payable_amount = #{payableAmount}
+        where supplier_code = #{supplierCode}
+    </update>
+
+    <update id="updatePayStatus" parameterType="PurchasePayOrderInfo">
+        update wl_purchase_supplier_pay_info
+        set
+            status = #{status},
+            audit_by = #{auditBy},
+            audit_time = #{auditTime}
+        where id = #{id}
+    </update>
+
+    <delete id="deletePurchasePayOrderInfoById" parameterType="Long">
+        delete
+        from wl_purchase_supplier_pay_info
+        where id
+                  =
+              #{id}
+    </delete>
+
+    <delete id="deletePurchasePayOrderInfoByIds" parameterType="String">
+        delete from wl_purchase_supplier_pay_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getMaxPayCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(pay_number, #{prefix}, '') + 0)) maxCode
+        FROM wl_purchase_supplier_pay_info
+        WHERE pay_number REGEXP CONCAT(#{prefix}
+            ,'[0-9]*$')
+    </select>
+
+</mapper>

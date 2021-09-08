@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.SupplierContractChangeMapper">
+
+    <resultMap type="SupplierContractChange" id="SupplierContractChangeResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="changeNumber" column="change_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="contractType" column="contract_type"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="contractStatus" column="contract_status"/>
+        <result property="changeStatus" column="change_status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="SupplierContractChangeVo" id="SupplierContractChangeVoResult">
+        <result property="id" column="id"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="changeNumber" column="change_number"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="contractType" column="contract_type"/>
+        <result property="contractStartDate" column="contract_start_date"/>
+        <result property="contractEndDate" column="contract_end_date"/>
+        <result property="contractStatus" column="contract_status"/>
+        <result property="changeStatus" column="change_status"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSupplierContractChangeVo">
+        select
+            psc.id,
+            psc.supplier_code,
+            ps.supplier_name AS supplierName,
+            psc.change_number,
+            psc.contract_number,
+            psc.contract_type,
+            sdd1.dict_label AS contractTypeName,
+            psc.contract_start_date,
+            psc.contract_end_date,
+            CASE WHEN now() &lt; date_format(psci.contract_start_date,'%Y-%m-%d 00:00:01') THEN '1'
+            WHEN now() > date_format(psci.contract_end_date,'%Y-%m-%d 23:59:59') THEN '3'
+            ELSE '2' END AS contract_status,
+            CASE WHEN now() &lt; date_format(psci.contract_start_date,'%Y-%m-%d 00:00:01') THEN '待生效'
+            WHEN now() > date_format(psci.contract_end_date,'%Y-%m-%d 23:59:59') THEN '已过期'
+            ELSE '生效中' END AS contractStatusName,
+            psc.change_status,
+            sdd3.dict_label AS changeStatusName,
+            psc.audit_time,
+            psc.remark,
+            u1.nick_name AS create_by,
+            u3.nick_name AS audit_by,
+            psc.create_time,
+            u2.nick_name AS update_by,
+            psc.update_time
+        from purchase_supplier_contract_change_info psc
+        left join purchase_supplier_contract_info psci on psci.contract_number = psc.contract_number
+        left join wl_supplier ps on psc.supplier_code = ps.supplier_code
+        left join sys_dict_data sdd1 on psc.contract_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+        left join sys_dict_data sdd3 on psc.change_status = sdd3.dict_value and sdd3.dict_type = 'dict_contract_audit_status'
+        left join sys_user u1 on u1.user_name = psc.create_by
+        left join sys_user u2 on u2.user_name = psc.update_by
+        left join sys_user u3 on u3.user_name = psc.audit_by
+    </sql>
+
+    <select id="selectSupplierContractChangeList" parameterType="SupplierContractChange" resultMap="SupplierContractChangeResult">
+        <include refid="selectSupplierContractChangeVo"/>
+        where
+            psci.audit_status = '2'
+            <if test="supplierCode != null  and supplierCode != ''">
+                and psc.supplier_code = #{supplierCode}
+            </if>
+            <if test="changeNumber != null  and changeNumber != ''">
+                and psc.change_number like concat('%', #{changeNumber}, '%')
+            </if>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and psc.contract_number like concat('%', #{contractNumber}, '%')
+            </if>
+            <if test="contractType != null  and contractType != ''">
+                and psc.contract_type = #{contractType}
+            </if>
+            <if test="changeStatus != null  and changeStatus != ''">
+                and psc.change_status = #{changeStatus}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(psc.create_time, '%Y-%m-%d') &gt;= date_format(#{beginTime},'%Y-%m-%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(psc.create_time,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+            </if>
+        ORDER BY psc.change_number DESC
+    </select>
+
+
+    <select id="selectSupplierContractChangeById" parameterType="Long" resultMap="SupplierContractChangeVoResult">
+        <include refid="selectSupplierContractChangeVo"/>
+        where psc.id = #{id}
+        and psci.audit_status = '2'
+    </select>
+
+    <insert id="insertSupplierContractChange" parameterType="SupplierContractChange" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into purchase_supplier_contract_change_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">supplier_code,
+            </if>
+            <if test="changeNumber != null">change_number,
+            </if>
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="contractType != null">contract_type,
+            </if>
+            <if test="contractStartDate != null">contract_start_date,
+            </if>
+            <if test="contractEndDate != null">contract_end_date,
+            </if>
+            <if test="changeStatus != null">change_status,
+            </if>
+            <if test="auditTime != null">audit_time,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="auditBy != null">audit_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="supplierCode != null">#{supplierCode},
+            </if>
+            <if test="changeNumber != null">#{changeNumber},
+            </if>
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="contractType != null">#{contractType},
+            </if>
+            <if test="contractStartDate != null">#{contractStartDate},
+            </if>
+            <if test="contractEndDate != null">#{contractEndDate},
+            </if>
+            <if test="changeStatus != null">#{changeStatus},
+            </if>
+            <if test="auditTime != null">#{auditTime},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="auditBy != null">#{auditBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateSupplierContractChange" parameterType="SupplierContractChange">
+        update purchase_supplier_contract_change_info
+        set
+            contract_end_date = #{contractEndDate},
+            change_status = #{changeStatus},
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            remark = #{remark}
+        where id = #{id}
+    </update>
+
+    <update id="updateAuditStatus" parameterType="SupplierContractChange">
+        update purchase_supplier_contract_change_info
+        set
+            change_status = #{changeStatus},
+            audit_by = #{auditBy},
+            audit_time = #{auditTime}
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierContractChangeById" parameterType="Long">
+        update purchase_supplier_contract_change_info set change_status = '3'
+        where id = #{id}
+    </update>
+
+    <update id="deleteSupplierContractChangeByIds" parameterType="String">
+        update purchase_supplier_contract_change_info set change_status = '3'
+        where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getMaxSupplierContractChangeNumber" parameterType="String" resultType="String">
+        SELECT CONCAT(#{prefix}, max(REPLACE(change_number, #{prefix}, '')+0)) maxCode FROM purchase_supplier_contract_change_info WHERE change_number REGEXP CONCAT(#{prefix},'[0-9]*$')
+    </select>
+
+</mapper>

@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.QualityInspectionDetailMapper">
+
+    <resultMap type="QualityInspectionDetail" id="QualityInspectionDetailResult">
+        <result property="id" column="id"/>
+        <result property="checkNumber" column="check_number"/>
+        <result property="materielNumber" column="materiel_number"/>
+        <result property="materielName" column="materiel_name"/>
+        <result property="modelParam" column="model_param"/>
+        <result property="wlType" column="wl_type"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="receiveNum" column="receive_num"/>
+        <result property="checkType" column="check_type"/>
+        <result property="checkNum" column="check_num"/>
+        <result property="qualifiedNum" column="qualified_num"/>
+        <result property="faultyNum" column="faulty_num"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectQualityInspectionDetailVo">
+        select id,
+               check_number,
+               materiel_number,
+               materiel_name,
+               model_param,
+               wl_type,
+               material_quality,
+               receive_num,
+               check_type,
+               case check_type
+                   when 1 then '全检'
+                   when 2 then '抽检'
+                   else ''
+                   end AS checkTypeName,
+               check_num,
+               qualified_num,
+               faulty_num,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from wl_receive_quality_inspection_detail
+    </sql>
+
+    <select id="selectQualityInspectionDetailList" parameterType="QualityInspectionDetail"
+            resultMap="QualityInspectionDetailResult">
+        <include refid="selectQualityInspectionDetailVo"/>
+        <where>
+            <if test="checkNumber != null  and checkNumber != ''">
+                and check_number = #{checkNumber}
+            </if>
+            <if test="materielNumber != null  and materielNumber != ''">
+                and materiel_number = #{materielNumber}
+            </if>
+            <if test="materielName != null  and materielName != ''">
+                and materiel_name like concat('%', #{materielName}, '%')
+            </if>
+            <if test="modelParam != null  and modelParam != ''">
+                and model_param = #{modelParam}
+            </if>
+            <if test="receiveNum != null ">
+                and receive_num = #{receiveNum}
+            </if>
+            <if test="checkType != null  and checkType != ''">
+                and check_type = #{checkType}
+            </if>
+            <if test="checkNum != null ">
+                and check_num = #{checkNum}
+            </if>
+            <if test="qualifiedNum != null ">
+                and qualified_num = #{qualifiedNum}
+            </if>
+            <if test="faultyNum != null ">
+                and faulty_num = #{faultyNum}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectQualityInspectionDetailById" parameterType="Long" resultMap="QualityInspectionDetailResult">
+        <include refid="selectQualityInspectionDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectQualityInspectionDetailByCheckNumber" parameterType="String"
+            resultMap="QualityInspectionDetailResult">
+        <include refid="selectQualityInspectionDetailVo"/>
+        where check_number = #{checkNumber}
+    </select>
+
+    <insert id="insertQualityInspectionDetail" parameterType="QualityInspectionDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_quality_inspection_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="checkNumber != null">check_number,
+            </if>
+            <if test="materielNumber != null">materiel_number,
+            </if>
+            <if test="materielName != null">materiel_name,
+            </if>
+            <if test="modelParam != null">model_param,
+            </if>
+            <if test="wlType != null">wl_type,
+            </if>
+            <if test="materialQuality != null">material_quality,
+            </if>
+            <if test="receiveNum != null">receive_num,
+            </if>
+            <if test="checkType != null">check_type,
+            </if>
+            <if test="checkNum != null">check_num,
+            </if>
+            <if test="qualifiedNum != null">qualified_num,
+            </if>
+            <if test="faultyNum != null">faulty_num,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="checkNumber != null">#{checkNumber},
+            </if>
+            <if test="materielNumber != null">#{materielNumber},
+            </if>
+            <if test="materielName != null">#{materielName},
+            </if>
+            <if test="modelParam != null">#{modelParam},
+            </if>
+            <if test="wlType != null">#{wlType},
+            </if>
+            <if test="materialQuality != null">#{materialQuality},
+            </if>
+            <if test="receiveNum != null">#{receiveNum},
+            </if>
+            <if test="checkType != null">#{checkType},
+            </if>
+            <if test="checkNum != null">#{checkNum},
+            </if>
+            <if test="qualifiedNum != null">#{qualifiedNum},
+            </if>
+            <if test="faultyNum != null">#{faultyNum},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertQualityInspectionDetailBatch" parameterType="QualityInspectionDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_quality_inspection_detail(
+        check_number,
+        materiel_number,
+        materiel_name,
+        model_param,
+        wl_type,
+        material_quality,
+        receive_num,
+        check_type,
+        check_num,
+        qualified_num,
+        faulty_num,
+        create_by,
+        create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.checkNumber},
+            #{item.materielNumber},
+            #{item.materielName},
+            #{item.modelParam},
+            #{item.wlType},
+            #{item.materialQuality},
+            #{item.receiveNum},
+            #{item.checkType},
+            #{item.checkNum},
+            #{item.qualifiedNum},
+            #{item.faultyNum},
+            #{item.createBy},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateQualityInspectionDetail" parameterType="QualityInspectionDetail">
+        update wl_receive_quality_inspection_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="checkNumber != null">check_number =
+                #{checkNumber},
+            </if>
+            <if test="materielNumber != null">materiel_number =
+                #{materielNumber},
+            </if>
+            <if test="materielName != null">materiel_name =
+                #{materielName},
+            </if>
+            <if test="modelParam != null">model_param =
+                #{modelParam},
+            </if>
+            <if test="receiveNum != null">receive_num =
+                #{receiveNum},
+            </if>
+            <if test="checkType != null">check_type =
+                #{checkType},
+            </if>
+            <if test="checkNum != null">check_num =
+                #{checkNum},
+            </if>
+            <if test="qualifiedNum != null">qualified_num =
+                #{qualifiedNum},
+            </if>
+            <if test="faultyNum != null">faulty_num =
+                #{faultyNum},
+            </if>
+            <if test="createBy != null">create_by =
+                #{createBy},
+            </if>
+            <if test="createTime != null">create_time =
+                #{createTime},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteQualityInspectionDetailById" parameterType="Long">
+        delete
+        from wl_receive_quality_inspection_detail
+        where id
+                  =
+              #{id}
+    </delete>
+
+    <delete id="deleteQualityInspectionDetailByCheckNumber" parameterType="String">
+        delete
+        from wl_receive_quality_inspection_detail
+        where check_number = #{checkNumber}
+    </delete>
+
+    <delete id="deleteQualityInspectionDetailByIds" parameterType="String">
+        delete from wl_receive_quality_inspection_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

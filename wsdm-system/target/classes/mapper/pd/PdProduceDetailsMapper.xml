@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdProduceDetailsMapper">
+
+    <resultMap type="PdProduceDetails" id="PdProduceDetailsResult">
+                    <result property="id" column="id"/>
+                    <result property="type" column="type"/>
+                    <result property="produce" column="produce"/>
+                    <result property="ref" column="ref"/>
+                    <result property="num" column="num"/>
+            </resultMap>
+
+    <sql id="selectPdProduceDetailsVo">
+        select id, type, produce, ref, num        from pd_produce_details
+    </sql>
+
+    <select id="selectPdProduceDetailsList" parameterType="PdProduceDetails" resultMap="PdProduceDetailsResult">
+        <include refid="selectPdProduceDetailsVo"/>
+        <where>
+                                                                                                    <if test="type != null  and type != ''">
+                            and type = #{type}
+                        </if>
+                                                                                                            <if test="produce != null  and produce != ''">
+                            and produce = #{produce}
+                        </if>
+                                                                                                            <if test="ref != null  and ref != ''">
+                            and ref = #{ref}
+                        </if>
+                                                                                                            <if test="num != null ">
+                            and num = #{num}
+                        </if>
+                                                        </where>
+    </select>
+
+    <select id="selectPdProduceDetailsById" parameterType="Long" resultMap="PdProduceDetailsResult">
+        <include refid="selectPdProduceDetailsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdProduceDetails" parameterType="PdProduceDetails" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_produce_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="type != null">type,
+                    </if>
+                                                                <if test="produce != null">produce,
+                    </if>
+                                                                <if test="ref != null">ref,
+                    </if>
+                                                                <if test="num != null">num,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="type != null">#{type},
+                    </if>
+                                                                <if test="produce != null">#{produce},
+                    </if>
+                                                                <if test="ref != null">#{ref},
+                    </if>
+                                                                <if test="num != null">#{num},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdProduceDetails" parameterType="PdProduceDetails">
+        update pd_produce_details
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="type != null">type =
+                        #{type},
+                    </if>
+                                                                <if test="produce != null">produce =
+                        #{produce},
+                    </if>
+                                                                <if test="ref != null">ref =
+                        #{ref},
+                    </if>
+                                                                <if test="num != null">num =
+                        #{num},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdProduceDetailsById" parameterType="Long">
+        delete
+        from pd_produce_details where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdProduceDetailsByIds" parameterType="String">
+        delete from pd_produce_details where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

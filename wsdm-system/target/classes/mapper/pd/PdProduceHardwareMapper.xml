@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdProduceHardwareMapper">
+
+    <resultMap type="PdProduceHardware" id="PdProduceHardwareResult">
+                    <result property="id" column="id"/>
+                    <result property="typeCode" column="type_code"/>
+                    <result property="typeName" column="type_name"/>
+                    <result property="model" column="model"/>
+                    <result property="status" column="status"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+                    <result property="code" column="code"/>
+            </resultMap>
+
+    <sql id="selectPdProduceHardwareVo">
+        select id, type_code, type_name, model, status, create_by, create_time, update_by, update_time,code        from pd_produce_hardware
+    </sql>
+
+    <select id="selectPdProduceHardwareList" parameterType="PdProduceHardware" resultMap="PdProduceHardwareResult">
+        <include refid="selectPdProduceHardwareVo"/>
+        <where>
+                                                                                                    <if test="typeCode != null  and typeCode != ''">
+                            and type_code = #{typeCode}
+                        </if>
+                                                                                                            <if test="typeName != null  and typeName != ''">
+                            and type_name like concat('%', #{typeName}, '%')
+                        </if>
+                                                                                                            <if test="model != null  and model != ''">
+                            and model = #{model}
+                        </if>
+                                                                                                            <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+            <if test="code != null  and code != ''">
+                and code = #{code}
+            </if>
+                                                                                                                                                                        </where>
+    </select>
+
+    <select id="selectPdProduceHardwareById" parameterType="Long" resultMap="PdProduceHardwareResult">
+        <include refid="selectPdProduceHardwareVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdProduceHardware" parameterType="PdProduceHardware" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_produce_hardware
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="typeCode != null">type_code,
+                    </if>
+                                                                <if test="typeName != null">type_name,
+                    </if>
+                                                                <if test="model != null">model,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+            <if test="code != null">code,
+            </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="typeCode != null">#{typeCode},
+                    </if>
+                                                                <if test="typeName != null">#{typeName},
+                    </if>
+                                                                <if test="model != null">#{model},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+            <if test="code != null">#{code},
+            </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdProduceHardware" parameterType="PdProduceHardware">
+        update pd_produce_hardware
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="typeCode != null">type_code =
+                        #{typeCode},
+                    </if>
+                                                                <if test="typeName != null">type_name =
+                        #{typeName},
+                    </if>
+                                                                <if test="model != null">model =
+                        #{model},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+            <if test="code != null">code =
+                #{code},
+            </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdProduceHardwareById" parameterType="Long">
+        delete
+        from pd_produce_hardware where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdProduceHardwareByIds" parameterType="String">
+        delete from pd_produce_hardware where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

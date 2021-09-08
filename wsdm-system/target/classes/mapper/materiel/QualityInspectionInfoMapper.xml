@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.QualityInspectionInfoMapper">
+
+    <resultMap type="QualityInspectionInfo" id="QualityInspectionInfoResult">
+        <result property="id" column="id"/>
+        <result property="checkNumber" column="check_number"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="checkDate" column="check_date"/>
+        <result property="percentPass" column="percent_pass"/>
+        <result property="checkResult" column="check_result"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap type="QualityInspectionInfoVo" id="QualityInspectionInfoVoResult">
+        <result property="id" column="id"/>
+        <result property="checkNumber" column="check_number"/>
+        <result property="receiveNumber" column="receive_number"/>
+        <result property="checkDate" column="check_date"/>
+        <result property="percentPass" column="percent_pass"/>
+        <result property="checkResult" column="check_result"/>
+        <result property="purchaseType" column="purchase_type"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="auditBy" column="audit_by"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectQualityInspectionInfoVo">
+        select
+            qi.id,
+            qi.check_number,
+            qi.receive_number,
+            qi.check_date,
+            qi.percent_pass,
+            case qi.check_result when 1 then '建议拒收'
+           when 2 then '建议收货'
+           else ''
+            end AS check_result,
+            qi.purchase_type,
+            sdd1.dict_label AS purchaseTypeName,
+            qi.remark,
+            qi.status,
+            case qi.status when 1 then '待质检'
+            when 2 then '待审核'
+            when 3 then '已审核'
+            else ''
+            end AS statusName,
+            u1.nick_name AS create_by,
+            u2.nick_name AS update_by,
+            u3.nick_name AS audit_by,
+            qi.audit_time,
+            qi.create_time,
+            qi.update_time
+        from wl_receive_quality_inspection_info qi
+         left join sys_dict_data sdd1 on qi.purchase_type = sdd1.dict_value and sdd1.dict_type = 'dict_purchase_type'
+         left join sys_user u1 on u1.user_name = qi.create_by
+         left join sys_user u2 on u2.user_name = qi.update_by
+         left join sys_user u3 on u3.user_name = qi.audit_by
+    </sql>
+
+    <select id="getMaxCheckCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(check_number, #{code}, '') + 0)) maxCode
+        FROM wl_receive_quality_inspection_info
+        WHERE check_number REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+
+    <select id="selectQualityInspectionInfoList" parameterType="QualityInspectionInfoVo"
+            resultMap="QualityInspectionInfoResult">
+        <include refid="selectQualityInspectionInfoVo"/>
+        <where>
+            <if test="checkNumber != null  and checkNumber != ''">
+                and qi.check_number like CONCAT('%', #{checkNumber},'%')
+            </if>
+            <if test="receiveNumber != null  and receiveNumber != ''">
+                and qi.receive_number  like CONCAT('%', #{receiveNumber},'%')
+            </if>
+            <if test="checkDate != null ">
+                and check_date = #{checkDate}
+            </if>
+            <if test="checkStartDate != null">
+                and qi.check_date &gt;= #{checkStartDate}
+            </if>
+            <if test="checkEndDate != null">
+                and qi.check_date &lt;= #{checkEndDate}
+            </if>
+            <if test="purchaseType != null  and purchaseType != ''">
+                and qi.purchase_type = #{purchaseType}
+            </if>
+            <if test="status != null  and status != ''">
+                and qi.status = #{status}
+            </if>
+        </where>
+        order by qi.check_number desc
+    </select>
+
+    <select id="selectQualityInspectionInfoById" parameterType="Long" resultMap="QualityInspectionInfoVoResult">
+        <include refid="selectQualityInspectionInfoVo"/>
+        where  qi.id = #{id}
+    </select>
+
+    <select id="selectQualityInspectionInfoByCheckNumber" parameterType="String" resultMap="QualityInspectionInfoVoResult">
+        <include refid="selectQualityInspectionInfoVo"/>
+        where  qi.check_number = #{checkNumber}
+    </select>
+
+    <insert id="insertQualityInspectionInfo" parameterType="QualityInspectionInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into wl_receive_quality_inspection_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="checkNumber != null">check_number,
+            </if>
+            <if test="receiveNumber != null">receive_number,
+            </if>
+            <if test="checkDate != null">check_date,
+            </if>
+            <if test="percentPass != null">percent_pass,
+            </if>
+            <if test="checkResult != null">check_result,
+            </if>
+            <if test="purchaseType != null">purchase_type,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="auditBy != null">audit_by,
+            </if>
+            <if test="auditTime != null">audit_time,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="checkNumber != null">#{checkNumber},
+            </if>
+            <if test="receiveNumber != null">#{receiveNumber},
+            </if>
+            <if test="checkDate != null">#{checkDate},
+            </if>
+            <if test="percentPass != null">#{percentPass},
+            </if>
+            <if test="checkResult != null">#{checkResult},
+            </if>
+            <if test="purchaseType != null">#{purchaseType},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="auditBy != null">#{auditBy},
+            </if>
+            <if test="auditTime != null">#{auditTime},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateApproveStatus" parameterType="QualityInspectionInfo">
+        update wl_receive_quality_inspection_info
+        set
+            status = #{status},
+            check_result = #{checkResult},
+            audit_by = #{auditBy},
+            audit_time = #{auditTime}
+        where id = #{id}
+    </update>
+
+    <update id="updateQualityInspectionInfo" parameterType="QualityInspectionInfo">
+        update wl_receive_quality_inspection_info
+        set
+            percent_pass = #{percentPass},
+            remark = #{remark},
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            status = #{status}
+        where id = #{id}
+    </update>
+
+    <update id="updateStatusById" parameterType="QualityInspectionInfo">
+        update wl_receive_quality_inspection_info
+        set
+            status = #{status},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteQualityInspectionInfoById" parameterType="Long">
+        delete
+        from wl_receive_quality_inspection_info
+        where id
+                  =
+              #{id}
+    </delete>
+
+    <delete id="deleteQualityInspectionInfoByIds" parameterType="String">
+        delete from wl_receive_quality_inspection_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

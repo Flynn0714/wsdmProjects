@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockBatchMapper">
+
+    <resultMap type="SkStockBatch" id="SkStockBatchResult">
+        <result property="id" column="id"/>
+        <result property="stockCode" column="stock_code"/>
+        <result property="stockName" column="stock_name"/>
+        <result property="batchCode" column="batch_code"/>
+        <result property="produce" column="produce"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="supplierCode" column="supplier_code"/>
+        <result property="openingStockNum" column="opening_stock_num"/>
+        <result property="batchTotal" column="batch_total"/>
+        <result property="stockLockNum" column="stock_lock_num"/>
+        <result property="stockFaultyNum" column="stock_faulty_num"/>
+        <result property="stockAvailableNum" column="stock_available_num"/>
+        <result property="batchTime" column="batch_time"/>
+        <result property="version" column="version"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSkStockBatchVo">
+        select id,
+               stock_code,
+               stock_name,
+               batch_code,
+               produce,
+               produce_name,
+               supplier_code,
+               opening_stock_num,
+               batch_total,
+               stock_lock_num,
+               stock_faulty_num,
+               stock_available_num,
+               batch_time,
+               version,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from sk_stock_batch
+    </sql>
+
+    <select id="selectSkStockBatchList" parameterType="SkStockBatch" resultMap="SkStockBatchResult">
+        <include refid="selectSkStockBatchVo"/>
+        <where>
+            <if test="stockCode != null  and stockCode != ''">
+                and stock_code = #{stockCode}
+            </if>
+            <if test="stockName != null  and stockName != ''">
+                and stock_name like concat('%', #{stockName}, '%')
+            </if>
+            <if test="batchCode != null  and batchCode != ''">
+                and batch_code = #{batchCode}
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce = #{produce}
+            </if>
+            <if test="produceName != null  and produceName != ''">
+                and produce_name = #{produceName}
+            </if>
+            <if test="supplierCode != null  and supplierCode != ''">
+                and supplier_code = #{supplierCode}
+            </if>
+            <if test="openingStockNum != null ">
+                and opening_stock_num = #{openingStockNum}
+            </if>
+            <if test="batchTotal != null ">
+                and batch_total = #{batchTotal}
+            </if>
+            <if test="stockLockNum != null ">
+                and stock_lock_num = #{stockLockNum}
+            </if>
+            <if test="stockFaultyNum != null ">
+                and stock_faulty_num = #{stockFaultyNum}
+            </if>
+            <if test="stockAvailableNum != null ">
+                and stock_available_num = #{stockAvailableNum}
+            </if>
+            <if test="batchTime != null ">
+                and batch_time = #{batchTime}
+            </if>
+            <if test="version != null  and version != ''">
+                and version = #{version}
+            </if>
+        </where>
+        order by batch_code
+    </select>
+
+    <select id="selectSkStockBatchById" parameterType="Long" resultMap="SkStockBatchResult">
+        <include refid="selectSkStockBatchVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getMaxBatchCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(batch_code, #{code}, '') + 0)) maxCode
+        FROM sk_stock_batch
+        WHERE batch_code REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+
+    <insert id="insertSkStockBatch" parameterType="SkStockBatch" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock_batch
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">stock_code,</if>
+            <if test="stockName != null">stock_name,</if>
+            <if test="batchCode != null">batch_code,</if>
+            <if test="produce != null">produce,</if>
+            <if test="produceName != null">produce_name,</if>
+            <if test="supplierCode != null">supplier_code,</if>
+            <if test="openingStockNum != null">opening_stock_num,</if>
+            <if test="batchTotal != null">batch_total,</if>
+            <if test="stockLockNum != null">stock_lock_num,</if>
+            <if test="stockFaultyNum != null">stock_faulty_num,</if>
+            <if test="stockAvailableNum != null">stock_available_num,</if>
+            <if test="batchTime != null">batch_time,</if>
+            <if test="version != null">version,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stockCode != null">#{stockCode},</if>
+            <if test="stockName != null">#{stockName},</if>
+            <if test="batchCode != null">#{batchCode},</if>
+            <if test="produce != null">#{produce},</if>
+            <if test="produceName != null">#{produceName},</if>
+            <if test="supplierCode != null">#{supplierCode},</if>
+            <if test="openingStockNum != null">#{openingStockNum},</if>
+            <if test="batchTotal != null">#{batchTotal},</if>
+            <if test="stockLockNum != null">#{stockLockNum},</if>
+            <if test="stockFaultyNum != null">#{stockFaultyNum},</if>
+            <if test="stockAvailableNum != null">#{stockAvailableNum},</if>
+            <if test="batchTime != null">#{batchTime},</if>
+            <if test="version != null">#{version},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">NOW(),</if>
+        </trim>
+    </insert>
+
+    <update id="updateSkStockBatch" parameterType="SkStockBatch">
+        update sk_stock_batch
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stockCode != null">
+                stock_code = #{stockCode},
+            </if>
+            <if test="stockName != null">
+                stock_name = #{stockName},
+            </if>
+            <if test="batchCode != null">
+                batch_code = #{batchCode},
+            </if>
+            <if test="produce != null">
+                produce = #{produce},
+            </if>
+            <if test="produceName != null">
+                produce_name = #{produceName},
+            </if>
+            <if test="supplierCode != null">
+                supplier_code = #{supplierCode},
+            </if>
+            <if test="openingStockNum != null">
+                opening_stock_num = #{openingStockNum},
+            </if>
+            <if test="batchTotal != null">
+                batch_total = #{batchTotal},
+            </if>
+            <if test="stockLockNum != null">
+                stock_lock_num = #{stockLockNum},
+            </if>
+            <if test="stockFaultyNum != null">
+                stock_faulty_num = #{stockFaultyNum},
+            </if>
+            <if test="stockAvailableNum != null">
+                stock_available_num = #{stockAvailableNum},
+            </if>
+            <if test="batchTime != null">
+                batch_time = #{batchTime},
+            </if>
+            <if test="version != null">
+                version = #{version},
+            </if>
+            <if test="remark != null">
+                remark = #{remark},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            update_time = NOW()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockBatchById" parameterType="Long">
+        delete
+        from sk_stock_batch
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteSkStockBatchByIds" parameterType="String">
+        delete from sk_stock_batch where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+  <select id="summary" resultType="SkStockBatch">
+    <![CDATA[
+    SELECT SUM(opening_stock_num) AS "openingStockNum",
+           SUM(batch_total) AS "batchTotal"
+      FROM sk_stock_batch WHERE stock_code = #{stockCode} AND produce=#{produce}
+    ]]>
+  </select>
+
+  <select id="selectAvailableBatch" resultMap="SkStockBatchResult">
+    <include refid="selectSkStockBatchVo"/>
+    <![CDATA[WHERE stock_available_num>0 AND produce=#{produce}]]>
+    <if test="stockCode!=null and stockCode != ''"><![CDATA[ AND stock_code=#{stockCode}]]></if>
+    <![CDATA[ORDER BY id ASC]]>
+  </select>
+
+  <update id="removeAvailableNum">
+    <![CDATA[
+      UPDATE sk_stock_batch
+         SET batch_total = batch_total - (CASE WHEN batch_total >= #{stockAvailableNum} THEN #{stockAvailableNum} ELSE batch_total END),
+             stock_lock_num = stock_lock_num - #{stockAvailableNum},
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE id=#{id} AND stock_lock_num >= #{stockAvailableNum}
+    ]]>
+  </update>
+
+  <update id="addStockLockNum">
+    <![CDATA[
+      UPDATE sk_stock_batch
+         SET stock_lock_num = stock_lock_num + #{stockLockNum},
+             stock_available_num = stock_available_num - #{stockLockNum},
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE id = #{id} AND stock_available_num >= #{stockLockNum}
+    ]]>
+  </update>
+
+  <update id="removeStockLockNum">
+    <![CDATA[
+      UPDATE sk_stock_batch
+         SET stock_available_num = stock_available_num + (CASE WHEN stock_lock_num >= #{stockLockNum} THEN #{stockLockNum} ELSE stock_lock_num END),
+             stock_lock_num=stock_lock_num-(CASE WHEN stock_lock_num >= #{stockLockNum} THEN #{stockLockNum} ELSE stock_lock_num END),
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE id=#{id}
+    ]]>
+  </update>
+
+  <select id="selectLockedBatch" resultMap="SkStockBatchResult">
+    <include refid="selectSkStockBatchVo"/>
+    <![CDATA[WHERE stock_lock_num>0 AND produce=#{produce}]]>
+    <if test="stockCode!=null and stockCode != ''"><![CDATA[ AND stock_code=#{stockCode}]]></if>
+    <![CDATA[ORDER BY id ASC]]>
+  </select>
+
+  <select id="selectFirst" resultMap="SkStockBatchResult">
+    <include refid="selectSkStockBatchVo"/>
+    <![CDATA[WHERE stock_code = #{stockCode} AND produce=#{produce} ORDER BY id ASC LIMIT 1]]>
+  </select>
+</mapper>

@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.sale.mapper.SalesOrderExchangeMapper">
+
+
+    <resultMap type="SalesOrderExchange" id="SalesOrderExchangeResult">
+        <result property="id" column="id"/>
+        <result property="exchangeNumber" column="exchange_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="exchangeTime" column="exchange_time"/>
+        <result property="customer" column="customer"/>
+        <result property="exchangeQuantity" column="exchange_quantity"/>
+        <result property="orderAmount" column="order_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="approver" column="approver"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="auditor" column="auditor"/>
+        <result property="auditTime" column="audit_time"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderExchangeSelect" id="SalesOrderExchangeSelectResult">
+        <result property="salesNumber" column="sales_number"/>
+        <result property="customer" column="customer"/>
+        <result property="exceptedDeliveryDate" column="expected_delivery_date"/>
+        <result property="deliveredQuantity" column="delivered_quantity"/>
+        <result property="exchangeQuantity" column="exchange_quantity"></result>
+    </resultMap>
+
+    <!--审核时查询换货详情-->
+    <resultMap type="SalesOrderExchangeDetail" id="SalesOrderExchangeQueryResult">
+        <result property="productType" column="product_type"/>
+        <result property="productNumber" column="product_number"/>
+        <result property="productName" column="product_name"/>
+        <result property="exchangeAmount" column="exchange_amount"/>
+        <result property="priceDifference" column="price_difference"/>
+        <result property="total" column="subtotal"/>
+        <result property="priceBy" column="price_by"/>
+        <result property="detailsRemark" column="details_remark"/>
+    </resultMap>
+
+    <resultMap type="SalesOrderExchangeDetails" id="SalesOrderExchangeCheckResult">
+        <result property="id" column="id"/>
+        <result property="sid" column="sid"/>
+        <result property="exchangeNumber" column="exchange_number"/>
+        <result property="salesNumber" column="sales_number"/>
+        <result property="exchangeTime" column="exchange_time"/>
+        <result property="customer" column="customer"/>
+        <result property="exchangeQuantity" column="exchange_quantity"/>
+        <result property="exchangeAmount" column="exchange_amount"/>
+        <result property="status" column="status"/>
+        <result property="specs" column="specs"/>
+        <result property="productType" column="product_type"/>
+        <result property="productNumber" column="product_number"/>
+        <result property="productName" column="product_name"/>
+        <result property="deliveredQuantity" column="delivered_quantity"/>
+        <result property="priceDifference" column="price_difference"/>
+        <result property="total" column="subtotal"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="approver" column="approver"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="auditor" column="auditor"/>
+        <result property="auditTime" column="audit_time"/>
+        <result property="priceBy" column="price_by"/>
+        <result property="detailsRemark" column="details_remark"/>
+    </resultMap>
+
+    <!--查询换货单列表-->
+    <select id="queryExchangeList" parameterType="SalesOrderExchangeQuery" resultMap="SalesOrderExchangeResult">
+        select soe.exchange_number,
+               soe.sales_number,
+               soe.exchange_time,
+               soe.customer,
+               soe.exchange_quantity,
+               soe.order_amount,
+               soe.status,
+               soe.approver,
+               soe.approve_time,
+               soe.auditor,
+               soe.audit_time
+        from sales_order_exchange as soe
+
+        <where>
+            <if test="exchangeNumber != null  and exchangeNumber != ''">
+                and soe.exchange_number like concat('%', #{exchangeNumber}, '%')
+            </if>
+            <if test="salesNumber != null  and salesNumber != ''">
+                and soe.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null  and customer != ''">
+                and soe.customer like concat('%', #{customer}, '%')
+            </if>
+            <if test="status != null  and status != ''">
+                and soe.status=#{status}
+            </if>
+            <if test="DateStart != null  and DateEnd != null">
+                and soe.exchange_time between #{DateStart} and #{DateEnd}
+            </if>
+        </where>
+        order by soe.exchange_number DESC, soe.create_time DESC
+    </select>
+
+    <select id="getExchange" parameterType="String" resultMap="SalesOrderExchangeResult">
+        select soe.exchange_number,
+        soe.sales_number,
+        soe.exchange_time,
+        soe.customer,
+        soe.exchange_quantity,
+        soe.order_amount,
+        soe.status,
+        soe.approver,
+        soe.approve_time,
+        soe.auditor,
+        soe.audit_time
+        from sales_order_exchange as soe
+        where soe.exchange_number = #{exchangeNumber}
+    </select>
+
+    <!--查询已发货或者部分发货的发货单对应的销售信息-->
+    <select id="queryDeliverySalesOrders" parameterType="SalesOrderExchangeQuery" resultMap="SalesOrderExchangeSelectResult">
+        SELECT DISTINCT
+            som.sales_number,
+            dqview.customer,
+            som.expected_delivery_date,
+            dqview.delivered_quantity,
+            soe.exchange_quantity
+        FROM
+        (   sales_order_manage som,
+            (
+            SELECT
+            sales_number,
+            CONCAT(
+            any_value (customer),
+            '.',
+            any_value (customer_link)
+            ) AS customer,
+        SUM(delivered_quantity) AS delivered_quantity
+        FROM
+          sales_order_delivery
+        WHERE
+          delivery_status = '2'
+        GROUP BY
+          sales_number
+          ) dqview)
+        LEFT JOIN (
+        (SELECT
+        sales_number,
+        SUM(exchange_quantity) as exchange_quantity
+        FROM
+        sales_order_exchange
+        WHERE
+        `status` = '2'
+        GROUP BY
+        sales_number) as soe
+        )
+        on soe.sales_number=som.sales_number
+        <where>
+            som.sales_number = dqview.sales_number
+            <if test="salesNumber != null  and salesNumber != ''">
+                and som.sales_number like concat('%', #{salesNumber}, '%')
+            </if>
+            <if test="customer != null and  customer !=''">
+                and som.customer=#{customer}
+            </if>
+        </where>
+    </select>
+
+    <!--审核时查询换货详情-->
+    <select id="queryexchangeDetailsList" parameterType="String" resultMap="SalesOrderExchangeQueryResult">
+        SELECT
+            product_type,
+            product_number,
+            product_name,
+            exchange_amount,
+            price_difference,
+            subtotal,
+            price_by,
+            details_remark
+        FROM
+            sales_order_exchange_details
+        WHERE
+            exchange_number = #{exchangeNumber}
+    </select>
+
+
+    <!--添加时显示已发货的物料-->
+    <select id="getDetailsList" parameterType="String" resultMap="SalesOrderExchangeCheckResult">
+        SELECT DISTINCT
+            somd.id,
+            somd.material_number AS product_number,
+            v.`name` AS product_name,
+            somd.details_type AS product_type,
+            sodd.delivered_quantity,
+            somd.subtotal,
+            pa.specs
+        FROM
+            sales_order_manage_details somd
+        LEFT JOIN materials_sales_view v ON v.number = somd.material_number
+        LEFT JOIN sales_order_delivery_details sodd on somd.id = sodd.order_details_id
+        left join pd_association pa on pa.material_number  = somd.material_number
+        WHERE
+            somd.sales_number = #{salesNumber}
+        AND somd.quantity > 0
+    </select>
+
+
+    <!--根据换货单号查看换单详情-->
+    <select id="getExchangeDetailsByExchangeNumber" parameterType="String" resultMap="SalesOrderExchangeCheckResult">
+         SELECT
+            soe.id,
+            soed.exchange_number,
+            soed.sales_number,
+            soe.exchange_time,
+            pa.specs specs,
+	        soed.id as sid,
+            soe.`status`,
+            (
+                SELECT
+                    CONCAT(soe.customer,'.',soc.customer_name)
+                from sales_order_customer as soc
+                WHERE soe.customer=soc.customer_number
+            ) as customer,
+            soe.remark,
+            soed.product_type,
+            soed.product_number,
+            soed.product_name,
+            soed.delivered_quantity,
+            soed.exchange_amount,
+            soed.price_difference,
+            soed.price_by,
+            soed.subtotal,
+            soed.details_remark,
+            soe.approver,
+            soe.approve_time,
+            soe.create_by,
+            soe.create_time,
+            soe.auditor,
+            soe.audit_time
+        From sales_order_exchange_details soed
+        LEFT JOIN sales_order_exchange soe on soe.exchange_number = soed.exchange_number
+        left join pd_association pa on pa.material_number  = soed.product_number
+        WHERE soe.exchange_number = #{exchangeNumber}
+    </select>
+
+    <!--生成换货单号-->
+    <select id="getMaxExchangeCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(exchange_number, #{code}, '') + 0)) maxCode
+        FROM sales_order_Exchange
+        WHERE exchange_number REGEXP CONCAT(#{code}, '[0-9]*$')
+    </select>
+
+    <!--添加换货单信息-->
+    <insert id="insertSalesOrderExchange" parameterType="SalesOrderExchange" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sales_order_exchange
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="exchangeNumber != null">exchange_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="customer != null">customer,
+            </if>
+            <if test="exchangeTime != null">exchange_time,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="remark != null">remark,
+            </if>
+            <if test="exchangeQuantity != null">exchange_quantity,
+            </if>
+            <if test="orderAmount != null">order_amount,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+            <if test="approver != null">approver,
+            </if>
+            <if test="approveTime != null">approve_time,
+            </if>
+            <if test="auditor != null">auditor,
+            </if>
+            <if test="auditTime != null">audit_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="exchangeNumber != null">#{exchangeNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="customer != null">#{customer},
+            </if>
+            <if test="exchangeTime != null">#{exchangeTime},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="remark != null">#{remark},
+            </if>
+            <if test="exchangeQuantity != null">#{exchangeQuantity},
+            </if>
+            <if test="orderAmount != null">#{orderAmount},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+            <if test="approver != null">#{approver},
+            </if>
+            <if test="approveTime != null">#{approveTime},
+            </if>
+            <if test="auditor != null">#{auditor},
+            </if>
+            <if test="auditTime != null">#{auditTime},
+            </if>
+        </trim>
+    </insert>
+
+    <!--添加换货单详情-->
+    <insert id="insertSalesOrderExchangeDetails" parameterType="SalesOrderExchangeDetails" useGeneratedKeys="true"
+            keyProperty="id">
+         insert into sales_order_exchange_details
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="exchangeNumber != null">exchange_number,
+            </if>
+            <if test="salesNumber != null">sales_number,
+            </if>
+            <if test="productType != null">product_type,
+            </if>
+            <if test="productNumber != null">product_number,
+            </if>
+            <if test="productName != null">product_name,
+            </if>
+            <if test="price != null">price,
+            </if>
+            <if test="amount != null">amount,
+            </if>
+            <if test="deliveredQuantity != null">delivered_quantity,
+            </if>
+            <if test="exchangeAmount != null">exchange_amount,
+            </if>
+            <if test="priceDifference != null">price_difference,
+            </if>
+            <if test="priceBy != null">price_by,
+            </if>
+            <if test="total != null">subtotal,
+            </if>
+            <if test="detailsRemark != null">details_remark,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="exchangeNumber != null">#{exchangeNumber},
+            </if>
+            <if test="salesNumber != null">#{salesNumber},
+            </if>
+            <if test="productType != null">#{productType},
+            </if>
+            <if test="productNumber != null">#{productNumber},
+            </if>
+            <if test="productName != null">#{productName},
+            </if>
+            <if test="price != null">#{price},
+            </if>
+            <if test="amount != null">#{amount},
+            </if>
+            <if test="deliveredQuantity != null">#{deliveredQuantity},
+            </if>
+            <if test="exchangeAmount != null">#{exchangeAmount},
+            </if>
+            <if test="priceDifference != null">#{priceDifference},
+            </if>
+            <if test="priceBy != null">#{priceBy},
+            </if>
+            <if test="total != null">#{total},
+            </if>
+            <if test="detailsRemark != null">#{detailsRemark},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+
+    <!--修改换货单主信息-->
+    <update id="updateSalesOrderExchange" parameterType="SalesOrderExchange">
+        update sales_order_exchange
+        <trim prefix="SET" suffixOverrides=",">
+
+            <if test="exchangeQuantity != null">exchange_quantity =
+                #{exchangeQuantity},
+            </if>
+            <if test="orderAmount != null">order_amount =
+                #{orderAmount},
+            </if>
+            <if test="status != null">status =
+                #{status},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            <if test="updateTime != null">update_time =
+                #{updateTime},
+            </if>
+            <if test="approver != null">approver =
+                #{approver},
+            </if>
+            <if test="approveTime != null">approve_time =
+                #{approveTime},
+            </if>
+            <if test="auditor != null">auditor =
+                #{auditor},
+            </if>
+            <if test="auditTime != null">audit_time =
+                #{auditTime},
+            </if>
+
+        </trim>
+        where exchange_number = #{exchangeNumber}
+    </update>
+
+    <update id="updateExchangeDetailsBatch" parameterType="SalesOrderExchangeDetails">
+        <foreach collection="list" item="item" index="index" separator=";">
+            update sales_order_exchange_details
+            <set>
+                `exchange_amount` = #{item.exchangeAmount},
+                `price_difference` = #{item.priceDifference},
+                `price_by` = #{item.priceBy},
+                `subtotal` = #{item.total},
+                `details_remark` = #{item.detailsRemark},
+                `update_by` = #{item.updateBy},
+                `update_time` = #{item.updateTime}
+            </set>
+            where `product_number`= #{item.productNumber} and `exchange_number` = #{item.exchangeNumber}
+        </foreach>
+    </update>
+
+    <update id="updateExchangeQuantityBatch" parameterType="SalesOrderExchangeDetail">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update sales_order_exchange_details set exchange_amount = #{item.exchangeAmount},price_difference = #{item.priceDifference}
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+</mapper>

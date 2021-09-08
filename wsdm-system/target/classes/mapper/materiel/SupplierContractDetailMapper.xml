@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.materiel.mapper.SupplierContractDetailMapper">
+
+    <resultMap type="SupplierContractDetail" id="SupplierContractDetailResult">
+        <result property="id" column="id"/>
+        <result property="contractNumber" column="contract_number"/>
+        <result property="materialNumber" column="material_number"/>
+        <result property="materialName" column="material_name"/>
+        <result property="modelParam" column="model_param"/>
+        <result property="unit" column="unit"/>
+        <result property="price" column="price"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSupplierContractDetailVo">
+        select id,
+               contract_number,
+               material_number,
+               material_name,
+               model_param,
+               price,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from purchase_supplier_contract_detail
+    </sql>
+
+    <select id="selectSupplierContractDetailList" parameterType="String" resultMap="SupplierContractDetailResult">
+        <include refid="selectSupplierContractDetailVo"/>
+        <where>
+            <if test="contractNumber != null  and contractNumber != ''">
+                and contract_number = #{contractNumber}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSupplierContractDetailById" parameterType="Long" resultMap="SupplierContractDetailResult">
+        <include refid="selectSupplierContractDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectRepeatDetailCount" resultType="int">
+        SELECT count(1)
+        from (
+            SELECT
+                material_number
+            FROM
+                purchase_supplier_contract_detail pscd
+            LEFT JOIN purchase_supplier_contract_info psci ON psci.contract_number = pscd.contract_number
+            WHERE
+                pscd.material_number = #{materialNumber}
+            AND psci.supplier_code = #{supplierCode}
+            AND psci.audit_status = '2'
+            AND psci.contract_number != #{contractNumber}
+            AND now() &lt;= date_format(psci.contract_end_date,'%Y-%m-%d 23:59:59')
+        ) AS t1
+    </select>
+
+    <insert id="insertSupplierContractDetail" parameterType="SupplierContractDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into purchase_supplier_contract_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="contractNumber != null">contract_number,
+            </if>
+            <if test="materialNumber != null">material_number,
+            </if>
+            <if test="materialName != null">material_name,
+            </if>
+            <if test="modelParam != null">model_param,
+            </if>
+            <if test="price != null">price,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="contractNumber != null">#{contractNumber},
+            </if>
+            <if test="materialNumber != null">#{materialNumber},
+            </if>
+            <if test="materialName != null">#{materialName},
+            </if>
+            <if test="modelParam != null">#{modelParam},
+            </if>
+            <if test="price != null">#{price},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertSupplierContractDetailBatch" parameterType="SupplierContractDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into purchase_supplier_contract_detail(
+        contract_number,
+        material_number,
+        material_name,
+        model_param,
+        price,
+        create_by,
+        create_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.contractNumber},
+            #{item.materialNumber},
+            #{item.materialName},
+            #{item.modelParam},
+            #{item.price},
+            #{item.createBy},
+            #{item.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <delete id="deleteSupplierContractDetailById" parameterType="Long">
+        delete from purchase_supplier_contract_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteSupplierContractDetailByIds" parameterType="String">
+        delete from purchase_supplier_contract_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSupplierContractDetailByContractNumber" parameterType="String">
+        delete from purchase_supplier_contract_detail
+        where contract_number = #{contractNumber}
+    </delete>
+
+</mapper>

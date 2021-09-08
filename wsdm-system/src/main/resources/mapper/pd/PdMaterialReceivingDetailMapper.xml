@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdMaterialReceivingDetailMapper">
+
+    <resultMap type="PdMaterialReceivingDetail" id="PdMaterialReceivingDetailResult">
+                    <result property="id" column="id"/>
+                    <result property="receivingId" column="receiving_id"/>
+                    <result property="materialCode" column="material_code"/>
+                    <result property="materialName" column="material_name"/>
+                    <result property="avaliableQuantity" column="avaliable_quantity"/>
+                    <result property="receiveQuantity" column="receive_quantity"/>
+                    <result property="status" column="status"/>
+                    <result property="model" column="model"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+                    <result property="processName" column="process_name"/>
+            </resultMap>
+
+    <sql id="selectPdMaterialReceivingDetailVo">
+        select id, receiving_id, material_code, material_name, process_name, avaliable_quantity, receive_quantity, status, model, create_by, create_time, update_by, update_time        from pd_material_receiving_detail
+    </sql>
+
+    <select id="selectPdMaterialReceivingDetailList" parameterType="PdMaterialReceivingDetail" resultMap="PdMaterialReceivingDetailResult">
+        <include refid="selectPdMaterialReceivingDetailVo"/>
+        <where>
+                                                                                                    <if test="receivingId != null ">
+                            and receiving_id = #{receivingId}
+                        </if>
+                                                                                                            <if test="materialCode != null  and materialCode != ''">
+                            and material_code = #{materialCode}
+                        </if>
+                                                                                                            <if test="materialName != null  and materialName != ''">
+                            and material_name like concat('%', #{materialName}, '%')
+                        </if>
+                                                                                                            <if test="avaliableQuantity != null ">
+                            and avaliable_quantity = #{avaliableQuantity}
+                        </if>
+                                                                                                            <if test="receiveQuantity != null ">
+                            and receive_quantity = #{receiveQuantity}
+                        </if>
+                                                                                                            <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+                                                                                                                                                                        </where>
+    </select>
+
+    <select id="selectPdMaterialReceivingDetailById" parameterType="Long" resultMap="PdMaterialReceivingDetailResult">
+        <include refid="selectPdMaterialReceivingDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdMaterialReceivingDetail" parameterType="PdMaterialReceivingDetail" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_material_receiving_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="receivingId != null">receiving_id,
+                    </if>
+                                                                <if test="materialCode != null">material_code,
+                    </if>
+                                                                <if test="materialName != null">material_name,
+                    </if>
+                                                                <if test="avaliableQuantity != null">avaliable_quantity,
+                    </if>
+                                                                <if test="receiveQuantity != null">receive_quantity,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                           <if test="model != null">model,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+          <if test="processName != null">process_name,
+          </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="receivingId != null">#{receivingId},
+                    </if>
+                                                                <if test="materialCode != null">#{materialCode},
+                    </if>
+                                                                <if test="materialName != null">#{materialName},
+                    </if>
+                                                                <if test="avaliableQuantity != null">#{avaliableQuantity},
+                    </if>
+                                                                <if test="receiveQuantity != null">#{receiveQuantity},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+            <if test="model != null">#{model},
+            </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+          <if test="processName != null">#{processName},
+          </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdMaterialReceivingDetail" parameterType="PdMaterialReceivingDetail">
+        update pd_material_receiving_detail
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="receivingId != null">receiving_id =
+                        #{receivingId},
+                    </if>
+                                                                <if test="materialCode != null">material_code =
+                        #{materialCode},
+                    </if>
+                                                                <if test="materialName != null">material_name =
+                        #{materialName},
+                    </if>
+                                                                <if test="avaliableQuantity != null">avaliable_quantity =
+                        #{avaliableQuantity},
+                    </if>
+                                                                <if test="receiveQuantity != null">receive_quantity =
+                        #{receiveQuantity},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+            <if test="model != null">model =
+                #{model},
+            </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+          <if test="processName != null">process_name =
+            #{processName},
+          </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdMaterialReceivingDetailById" parameterType="Long">
+        delete
+        from pd_material_receiving_detail where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdMaterialReceivingDetailByIds" parameterType="String">
+        delete from pd_material_receiving_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

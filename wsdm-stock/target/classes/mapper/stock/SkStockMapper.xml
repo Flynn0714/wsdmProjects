@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.stock.mapper.SkStockMapper">
+
+    <resultMap type="SkStock" id="SkStockResult">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="produce" column="produce"/>
+        <result property="produceName" column="produce_name"/>
+        <result property="stockTotal" column="stock_total"/>
+        <result property="stockTransitNum" column="stock_transit_num"/>
+        <result property="stockLockNum" column="stock_lock_num"/>
+        <result property="stockFaultyNum" column="stock_faulty_num"/>
+        <result property="stockAvailableNum" column="stock_available_num"/>
+        <result property="version" column="version"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectSkStockVo">
+        select id,
+               code,
+               `name`,
+               produce,
+               produce_name,
+               stock_total,
+               stock_transit_num,
+               stock_lock_num,
+               stock_faulty_num,
+               stock_available_num,
+               version,
+               remark,
+               create_by,
+               create_time,
+               update_by,
+               update_time,
+               (case when update_time is not null then update_time else create_time end) as sort_time
+        from sk_stock
+    </sql>
+
+    <select id="selectSkStockList" parameterType="SkStock" resultMap="SkStockResult">
+        <include refid="selectSkStockVo"/>
+        <where>
+            <if test="code != null  and code != ''">
+                and code like concat('%',#{code},'%')
+            </if>
+            <if test="name != null  and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce like concat('%',#{produce},'%')
+            </if>
+            <if test="produceName != null  and produceName != ''">
+                and produce_name LIKE CONCAT('%',#{produceName},'%')
+            </if>
+            <if test="version != null  and version != ''">
+                and version = #{version}
+            </if>
+          <if test="supplierCode != null  and supplierCode != ''">
+            and code IN (SELECT stock_code FROM sk_stock_batch WHERE supplier_code = #{supplierCode})
+          </if>
+            <if test="onlyAvailable!=null and onlyAvailable">
+                <![CDATA[and stock_available_num > 0]]>
+            </if>
+        </where>
+        <![CDATA[order by sort_time desc]]>
+    </select>
+
+    <select id="getMaxCode" parameterType="String" resultType="String">
+        SELECT CONCAT(#{code}, max(REPLACE(produce, #{code}, '') + 0)) maxCode
+        FROM sk_stock
+        WHERE produce REGEXP CONCAT(#{code}
+            ,'[0-9]*$')
+    </select>
+
+    <select id="selectSkStockById" parameterType="Long" resultMap="SkStockResult">
+        <include refid="selectSkStockVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getStockByGroup" resultMap="SkStockResult">
+        SELECT
+            `code`,
+            id,
+            `name`,
+            produce,
+            produce_name,
+            count( stock_total ) AS stock_total,
+            count( stock_transit_num ) AS stockTransitNum,
+            count( stock_lock_num ) AS stock_lock_num,
+            count( stock_faulty_num ) AS stock_faulty_num,
+            count( stock_available_num ) AS stock_available_num
+        FROM
+            sk_stock
+        GROUP BY
+            `code`
+    </select>
+
+    <insert id="insertSkStock" parameterType="SkStock" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sk_stock
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="produce != null">produce,</if>
+            <if test="produceName != null">produce_name,</if>
+            <if test="stockTotal != null">stock_total,</if>
+            <if test="stockTransitNum != null">stock_transit_num,</if>
+            <if test="stockLockNum != null">stock_lock_num,</if>
+            <if test="stockFaultyNum != null">stock_faulty_num,</if>
+            <if test="stockAvailableNum != null">stock_available_num,</if>
+            <if test="version != null">version,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="produce != null">#{produce},</if>
+            <if test="produceName != null">#{produceName},</if>
+            <if test="stockTotal != null">#{stockTotal},</if>
+            <if test="stockTransitNum != null">#{stockTransitNum},</if>
+            <if test="stockLockNum != null">#{stockLockNum},</if>
+            <if test="stockFaultyNum != null">#{stockFaultyNum},</if>
+            <if test="stockAvailableNum != null">#{stockAvailableNum},</if>
+            <if test="version != null">#{version},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">NOW(),</if>
+        </trim>
+    </insert>
+
+    <insert id="insertSkStockBatch"  parameterType="SkStockBatch"  useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO `sk_stock`(`code`, `name`, `produce`, `produce_name`, `stock_total`,`stock_transit_num`, `stock_lock_num`,
+        `stock_faulty_num`, `stock_available_num`, `version`, `remark`, `create_by`, `create_time`)
+        VALUES
+        <foreach collection ="list" item="item" index="index" separator =",">
+            (#{item.code}, #{item.name}, #{item.produce}, #{item.produceName}, #{item.stockTotal},#{item.stockTransitNum}, #{item.stockLockNum},
+            #{item.stockFaultyNum}, #{item.stockAvailableNum}, #{item.version}, #{item.remark}, #{item.createBy}, NOW())
+        </foreach>
+    </insert>
+
+    <update id="updateSkStock" parameterType="SkStock">
+        update sk_stock
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code =
+                #{code},
+            </if>
+            <if test="name != null">name =
+                #{name},
+            </if>
+            <if test="produce != null">produce =
+                #{produce},
+            </if>
+            <if test="produceName != null">produce_name =
+                #{produceName},
+            </if>
+            <if test="stockTotal != null">stock_total =
+                #{stockTotal},
+            </if>
+            <if test="stockTransitNum != null">stock_transit_num =
+                #{stockTransitNum},
+            </if>
+            <if test="stockLockNum != null">stock_lock_num =
+                #{stockLockNum},
+            </if>
+            <if test="stockFaultyNum != null">stock_faulty_num =
+                #{stockFaultyNum},
+            </if>
+            <if test="stockAvailableNum != null">stock_available_num =
+                #{stockAvailableNum},
+            </if>
+            <if test="version != null">version =
+                #{version},
+            </if>
+            <if test="remark != null">remark =
+                #{remark},
+            </if>
+            <if test="updateBy != null">update_by =
+                #{updateBy},
+            </if>
+            update_time = NOW()
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSkStockById" parameterType="Long">
+        delete
+        from sk_stock
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteSkStockByIds" parameterType="String">
+        delete from sk_stock where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+  <update id="addStockLockNum">
+    <![CDATA[
+      UPDATE sk_stock
+         SET stock_lock_num=stock_lock_num+#{stockLockNum},
+             stock_available_num = stock_available_num - (CASE WHEN stock_available_num >= #{stockLockNum} THEN #{stockLockNum} ELSE stock_available_num END),
+             update_time=NOW(),
+             update_by = #{updateBy}
+    ]]>
+    <where>
+      <if test="id!=null"><![CDATA[ AND id=#{id}]]></if>
+      <if test="code!=null and code!=''"><![CDATA[ AND code=#{code}]]></if>
+      <if test="produce!=null and produce!=''"><![CDATA[ AND produce=#{produce}]]></if>
+    </where>
+  </update>
+
+  <select id="summary" resultType="SkStock">
+    <![CDATA[
+    SELECT produce,
+           SUM(stock_total) AS "stockTotal",
+           SUM(stock_transit_num) AS "stockTransitNum",
+           SUM(stock_lock_num) AS "stockLockNum",
+           SUM(stock_faulty_num) AS "stockFaultyNum",
+           SUM(stock_available_num) AS "stockAvailableNum"
+      FROM sk_stock WHERE produce = #{produce}
+    ]]>
+    <if test="code!=null and code != ''"><![CDATA[AND code = #{code}]]></if>
+  </select>
+
+  <update id="addStockTransitNum">
+    <![CDATA[
+      UPDATE sk_stock
+         SET stock_transit_num=(CASE WHEN stock_transit_num IS NULL THEN 0 ELSE stock_transit_num END)+#{stockTransitNum},
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE id=#{id}
+    ]]>
+  </update>
+
+  <update id="addStock">
+    <![CDATA[
+      UPDATE sk_stock
+         SET stock_total=(CASE WHEN stock_total IS NULL THEN 0 ELSE stock_total END)+#{stockTotal},
+             stock_available_num=(CASE WHEN stock_available_num IS NULL THEN 0 ELSE stock_available_num END)+#{stockAvailableNum},
+             stock_faulty_num=(CASE WHEN stock_faulty_num IS NULL THEN 0 ELSE stock_faulty_num END)+#{stockFaultyNum},
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE code=#{code} AND produce = #{produce}
+    ]]>
+  </update>
+
+  <update id="removeAvailableNum">
+    <![CDATA[
+      UPDATE sk_stock
+         SET stock_total = stock_total - (CASE WHEN stock_lock_num >= #{stockAvailableNum} THEN #{stockAvailableNum} ELSE stock_lock_num END),
+             stock_lock_num=stock_lock_num - (CASE WHEN stock_lock_num >= #{stockAvailableNum} THEN #{stockAvailableNum} ELSE stock_lock_num END),
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE code=#{code} AND produce = #{produce}
+    ]]>
+  </update>
+
+  <update id="removeStockLockNum">
+    <![CDATA[
+      UPDATE sk_stock
+         SET stock_available_num = stock_available_num + (CASE WHEN stock_lock_num >= #{stockLockNum} THEN #{stockLockNum} ELSE stock_lock_num END),
+             stock_lock_num=stock_lock_num-(CASE WHEN stock_lock_num >= #{stockLockNum} THEN #{stockLockNum} ELSE stock_lock_num END),
+             update_time=NOW(),
+             update_by = #{updateBy}
+    ]]>
+    <where>
+      <if test="id!=null"><![CDATA[ AND id=#{id}]]></if>
+      <if test="code!=null and code!=''"><![CDATA[ AND code=#{code}]]></if>
+      <if test="produce!=null and produce!=''"><![CDATA[ AND produce=#{produce}]]></if>
+    </where>
+  </update>
+
+    <select id="selectAvailableMaterial" parameterType="SkStock" resultMap="SkStockResult">
+        <include refid="selectSkStockVo"/>
+        <where>
+            <if test="code != null  and code != ''">
+                and code = #{code}
+            </if>
+            <if test="name != null  and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="produce != null  and produce != ''">
+                and produce like concat('%', #{produce}, '%')
+            </if>
+            <if test="produceName != null  and produceName != ''">
+                and produce_name LIKE CONCAT('%',#{produceName},'%')
+            </if>
+            <![CDATA[and stock_available_num>0]]>
+        </where>
+    </select>
+
+    <update id="removeStockTransitNum">
+        <![CDATA[
+      UPDATE sk_stock
+         SET stock_transit_num=stock_transit_num - (CASE WHEN stock_transit_num >= #{stockTransitNum} THEN #{stockTransitNum} ELSE stock_transit_num END),
+             update_time=NOW(),
+             update_by = #{updateBy}
+       WHERE code=#{code} AND produce = #{produce}
+    ]]>
+    </update>
+</mapper>

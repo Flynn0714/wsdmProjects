@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.produce.mapper.RawMaterialMapper">
+
+    <resultMap type="RawMaterial" id="RawMaterialResult">
+        <result property="id" column="id"/>
+        <result property="semiProduceName" column="semi_produce_name"/>
+        <result property="semiProduceNumber" column="semi_produce_number"/>
+        <result property="semiProduceModel" column="semi_produce_model"/>
+        <result property="materialQuality" column="material_quality"/>
+        <result property="modulusToothNumber" column="modulus_tooth_number"/>
+        <result property="specifications" column="specifications"/>
+        <result property="num" column="num"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectRawMaterialVo">
+        select id,
+               semi_produce_name,
+               semi_produce_number,
+               semi_produce_model,
+               material_quality,
+               modulus_tooth_number,
+               specifications,
+               status,
+               create_by,
+               create_time,
+               update_by,
+               update_time
+        from pd_raw_material
+    </sql>
+
+    <select id="selectRawMaterialList" parameterType="RawMaterial" resultMap="RawMaterialResult">
+        <include refid="selectRawMaterialVo"/>
+        <where>
+            <if test="semiProduceName != null  and semiProduceName != ''">
+                and semi_produce_name like concat('%', #{semiProduceName}, '%')
+            </if>
+            <if test="semiProduceNumber != null  and semiProduceNumber != ''">
+                and semi_produce_number = #{semiProduceNumber}
+            </if>
+            <if test="semiProduceModel != null  and semiProduceModel != ''">
+                and semi_produce_model = #{semiProduceModel}
+            </if>
+            <if test="materialQuality != null  and materialQuality != ''">
+                and material_quality = #{materialQuality}
+            </if>
+            <if test="modulusToothNumber != null  and modulusToothNumber != ''">
+                and modulus_tooth_number = #{modulusToothNumber}
+            </if>
+            <if test="specifications != null  and specifications != ''">
+                and specifications = #{specifications}
+            </if>
+            <if test="status != null  and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectRawMaterialById" parameterType="Long" resultMap="RawMaterialResult">
+        <include refid="selectRawMaterialVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertRawMaterial" parameterType="RawMaterial" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_raw_material
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="semiProduceName != null">semi_produce_name,
+            </if>
+            <if test="semiProduceNumber != null">semi_produce_number,
+            </if>
+            <if test="semiProduceModel != null">semi_produce_model,
+            </if>
+            <if test="materialQuality != null">material_quality,
+            </if>
+            <if test="modulusToothNumber != null">modulus_tooth_number,
+            </if>
+            <if test="specifications != null">specifications,
+            </if>
+            <if test="status != null">status,
+            </if>
+            <if test="createBy != null">create_by,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="updateBy != null">update_by,
+            </if>
+            <if test="updateTime != null">update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="semiProduceName != null">#{semiProduceName},
+            </if>
+            <if test="semiProduceNumber != null">#{semiProduceNumber},
+            </if>
+            <if test="semiProduceModel != null">#{semiProduceModel},
+            </if>
+            <if test="materialQuality != null">#{materialQuality},
+            </if>
+            <if test="modulusToothNumber != null">#{modulusToothNumber},
+            </if>
+            <if test="specifications != null">#{specifications},
+            </if>
+            <if test="status != null">#{status},
+            </if>
+            <if test="createBy != null">#{createBy},
+            </if>
+            <if test="createTime != null">#{createTime},
+            </if>
+            <if test="updateBy != null">#{updateBy},
+            </if>
+            <if test="updateTime != null">#{updateTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="insertRawMaterialBatch" parameterType="RawMaterial" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_raw_material (semi_produce_name, semi_produce_number, semi_produce_model,
+        material_quality, modulus_tooth_number, specifications, status, create_by, create_time)
+        values
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.semiProduceName}, #{item.semiProduceNumber}, #{item.semiProduceModel}, #{item.materialQuality},
+            #{item.modulusToothNumber}, #{item.specifications}, #{item.status}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateRawMaterial" parameterType="RawMaterial">
+        update pd_raw_material
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="semiProduceName != null">
+                semi_produce_name =  #{semiProduceName},
+            </if>
+            <if test="semiProduceNumber != null">
+                semi_produce_number = #{semiProduceNumber},
+            </if>
+            <if test="semiProduceModel != null">
+                semi_produce_model = #{semiProduceModel},
+            </if>
+            <if test="materialQuality != null">
+                material_quality = #{materialQuality},
+            </if>
+            <if test="specifications != null">
+                specifications = #{specifications},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createBy != null">
+                create_by = #{createBy},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateBy != null">
+                update_by = #{updateBy},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteRawMaterialById" parameterType="Long">
+        update pd_raw_material set status = '1'
+        where id = #{id}
+    </update>
+
+    <update id="deleteRawMaterialByIds" parameterType="String">
+        update pd_raw_material set status = '1'  where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

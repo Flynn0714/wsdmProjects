@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.PdContributionMapper">
+
+    <resultMap type="PdContribution" id="PdContributionResult">
+                    <result property="id" column="id"/>
+                    <result property="code" column="code"/>
+                    <result property="employeeName" column="employee_name"/>
+                    <result property="processTime" column="process_time"/>
+                    <result property="deptCode" column="dept_code"/>
+                    <result property="deptName" column="dept_name"/>
+                    <result property="materialType" column="material_type"/>
+                    <result property="materialTypeName" column="material_type_name"/>
+                    <result property="totalQuantity" column="total_quantity"/>
+                    <result property="test" column="test"/>
+                    <result property="testCode" column="test_code"/>
+                    <result property="testId" column="test_id"/>
+                    <result property="remark" column="remark"/>
+                    <result property="status" column="status"/>
+                    <result property="auditor" column="auditor"/>
+                    <result property="auditTime" column="audit_time"/>
+                    <result property="createBy" column="create_by"/>
+                    <result property="createTime" column="create_time"/>
+                    <result property="updateBy" column="update_by"/>
+                    <result property="updateTime" column="update_time"/>
+            </resultMap>
+
+    <sql id="selectPdContributionVo">
+        select id, code, employee_name, process_time, dept_code, dept_name, material_type, material_type_name, total_quantity, test, test_code, test_id, remark, status, auditor, audit_time, create_by, create_time, update_by, update_time        from pd_contribution
+    </sql>
+
+    <select id="selectPdContributionList" parameterType="PdContribution" resultMap="PdContributionResult">
+        <include refid="selectPdContributionVo"/>
+        <where>
+                                                                                                    <if test="code != null  and code != ''">
+                            and code like concat('%',#{code},'%')
+                        </if>
+                                                                                                            <if test="employeeName != null  and employeeName != ''">
+                            and employee_name like concat('%', #{employeeName}, '%')
+                        </if>
+                                                                                                            <if test="processTime != null ">
+                            and process_time = #{processTime}
+                        </if>
+                                                                                                            <if test="deptCode != null  and deptCode != ''">
+                            and dept_code = #{deptCode}
+                        </if>
+                                                                                                            <if test="deptName != null  and deptName != ''">
+                            and dept_name like concat('%', #{deptName}, '%')
+                        </if>
+                                                                                                            <if test="materialType != null  and materialType != ''">
+                            and material_type = #{materialType}
+                        </if>
+                                                                                                            <if test="materialTypeName != null  and materialTypeName != ''">
+                            and material_type_name like concat('%', #{materialTypeName}, '%')
+                        </if>
+                                                                                                            <if test="totalQuantity != null ">
+                            and total_quantity = #{totalQuantity}
+                        </if>
+                                                                                                            <if test="test != null  and test != ''">
+                            and test = #{test}
+                        </if>
+                                                                                                            <if test="testCode != null  and testCode != ''">
+                            and test_code = #{testCode}
+                        </if>
+                                                                                                                                        <if test="status != null  and status != ''">
+                            and status = #{status}
+                        </if>
+                                                                                                            <if test="auditor != null  and auditor != ''">
+                            and auditor = #{auditor}
+                        </if>
+                                                                                                            <if test="auditTime != null ">
+                            and audit_time = #{auditTime}
+                        </if>
+          <if test="beginTime!=null and beginTime!=''"><![CDATA[AND process_time>=#{beginTime}]]></if>
+          <if test="endTime!=null and endTime!=''"><![CDATA[AND process_time<=#{endTime}]]></if>
+                                                                                                                                                                        </where>
+      <![CDATA[order by code desc]]>
+    </select>
+
+    <select id="selectPdContributionById" parameterType="Long" resultMap="PdContributionResult">
+        <include refid="selectPdContributionVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertPdContribution" parameterType="PdContribution" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into pd_contribution
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                                                                            <if test="code != null">code,
+                    </if>
+                                                                <if test="employeeName != null">employee_name,
+                    </if>
+                                                                <if test="processTime != null">process_time,
+                    </if>
+                                                                <if test="deptCode != null">dept_code,
+                    </if>
+                                                                <if test="deptName != null">dept_name,
+                    </if>
+                                                                <if test="materialType != null">material_type,
+                    </if>
+                                                                <if test="materialTypeName != null">material_type_name,
+                    </if>
+                                                                <if test="totalQuantity != null">total_quantity,
+                    </if>
+                                                                <if test="test != null">test,
+                    </if>
+                                                                <if test="testCode != null">test_code,
+                    </if>
+            <if test="testId != null">test_id,
+            </if>
+                                                                <if test="remark != null">remark,
+                    </if>
+                                                                <if test="status != null">status,
+                    </if>
+                                                                <if test="auditor != null">auditor,
+                    </if>
+                                                                <if test="auditTime != null">audit_time,
+                    </if>
+                                                                <if test="createBy != null">create_by,
+                    </if>
+                                                                <if test="createTime != null">create_time,
+                    </if>
+                                                                <if test="updateBy != null">update_by,
+                    </if>
+                                                                <if test="updateTime != null">update_time,
+                    </if>
+                                    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                                                                            <if test="code != null">#{code},
+                    </if>
+                                                                <if test="employeeName != null">#{employeeName},
+                    </if>
+                                                                <if test="processTime != null">#{processTime},
+                    </if>
+                                                                <if test="deptCode != null">#{deptCode},
+                    </if>
+                                                                <if test="deptName != null">#{deptName},
+                    </if>
+                                                                <if test="materialType != null">#{materialType},
+                    </if>
+                                                                <if test="materialTypeName != null">#{materialTypeName},
+                    </if>
+                                                                <if test="totalQuantity != null">#{totalQuantity},
+                    </if>
+                                                                <if test="test != null">#{test},
+                    </if>
+                                                                <if test="testCode != null">#{testCode},
+                    </if>
+            <if test="testId != null">#{testId},
+            </if>
+                                                                <if test="remark != null">#{remark},
+                    </if>
+                                                                <if test="status != null">#{status},
+                    </if>
+                                                                <if test="auditor != null">#{auditor},
+                    </if>
+                                                                <if test="auditTime != null">#{auditTime},
+                    </if>
+                                                                <if test="createBy != null">#{createBy},
+                    </if>
+                                                                <if test="createTime != null">#{createTime},
+                    </if>
+                                                                <if test="updateBy != null">#{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">#{updateTime},
+                    </if>
+                                    </trim>
+    </insert>
+
+    <update id="updatePdContribution" parameterType="PdContribution">
+        update pd_contribution
+        <trim prefix="SET" suffixOverrides=",">
+                                                                            <if test="code != null">code =
+                        #{code},
+                    </if>
+                                                                <if test="employeeName != null">employee_name =
+                        #{employeeName},
+                    </if>
+                                                                <if test="processTime != null">process_time =
+                        #{processTime},
+                    </if>
+                                                                <if test="deptCode != null">dept_code =
+                        #{deptCode},
+                    </if>
+                                                                <if test="deptName != null">dept_name =
+                        #{deptName},
+                    </if>
+                                                                <if test="materialType != null">material_type =
+                        #{materialType},
+                    </if>
+                                                                <if test="materialTypeName != null">material_type_name =
+                        #{materialTypeName},
+                    </if>
+                                                                <if test="totalQuantity != null">total_quantity =
+                        #{totalQuantity},
+                    </if>
+                                                                <if test="test != null">test =
+                        #{test},
+                    </if>
+                                                                <if test="testCode != null">test_code =
+                        #{testCode},
+                    </if>
+            <if test="testId != null">test_id =
+                #{testId},
+            </if>
+                                                                <if test="remark != null">remark =
+                        #{remark},
+                    </if>
+                                                                <if test="status != null">status =
+                        #{status},
+                    </if>
+                                                                <if test="auditor != null">auditor =
+                        #{auditor},
+                    </if>
+                                                                <if test="auditTime != null">audit_time =
+                        #{auditTime},
+                    </if>
+                                                                <if test="createBy != null">create_by =
+                        #{createBy},
+                    </if>
+                                                                <if test="createTime != null">create_time =
+                        #{createTime},
+                    </if>
+                                                                <if test="updateBy != null">update_by =
+                        #{updateBy},
+                    </if>
+                                                                <if test="updateTime != null">update_time =
+                        #{updateTime},
+                    </if>
+                                    </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePdContributionById" parameterType="Long">
+        delete
+        from pd_contribution where id
+                          =
+                          #{id}
+    </delete>
+
+    <delete id="deletePdContributionByIds" parameterType="String">
+        delete from pd_contribution where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+  <select id="getLatestCode" resultType="String">
+    <![CDATA[SELECT code FROM pd_contribution ORDER BY id DESC LIMIT 1]]>
+  </select>
+</mapper>

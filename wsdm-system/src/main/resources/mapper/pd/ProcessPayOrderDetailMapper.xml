@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wsdm.pd.mapper.ProcessPayOrderDetailMappper">
+
+    <resultMap type="ProcessPayOrderDetail" id="ProcessPayOrderDetailResult">
+        <result property="id" column="id"/>
+        <result property="pid" column="p_id"/>
+        <result property="processDept" column="process_dept"/>
+        <result property="employee" column="employee"/>
+        <result property="payWay" column="pay_way"/>
+        <result property="payBank" column="pay_bank"/>
+        <result property="payAccount" column="pay_account"/>
+        <result property="payAmount" column="pay_amount"/>
+        <result property="remark" column="remark"/>
+        <result property="payDate" column="pay_date"/>
+        <result property="createBy" column="create_by"/>
+        <result property="payName" column="nick_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectProcessDetailVo">
+            select
+                    pdd.id,
+                    pdd.p_id,
+                    pdd.process_dept,
+                    pdd.pay_way,
+                    sdd.dict_label as wayName,
+                    pdd.pay_bank,
+                    sdd2.dict_label as bankName,
+                    pdd.pay_account,
+                    pdd.employee,
+                    pdd.pay_date,
+                    pdd.pay_amount,
+                    pdd.remark,
+                    pdd.create_by,
+					u.nick_name,
+                    pdd.create_time,
+                    pdd.update_by,
+                    pdd.update_time
+                from process_pay_order_detail pdd
+                left join sys_dict_data sdd on pdd.pay_way = sdd.dict_value and sdd.dict_type='dict_pay_way'
+                left join sys_dict_data sdd2 on pdd.pay_bank = sdd2.dict_value and sdd2.dict_type='dict_pay_bank'
+				left join sys_user u on pdd.create_by = u.user_name
+    </sql>
+
+    <select id="selectProcessDetail" resultMap="ProcessPayOrderDetailResult" parameterType="ProcessPayOrderDetail">
+        <include refid="selectProcessDetailVo"/>
+        <where>
+            <if test="payWay != null">
+                and pay_way = #{payWay}
+            </if>
+            <if test="employee != null">
+                and employee = #{employee}
+            </if>
+            <if test="payDate != null">
+                and pay_date = #{payDate}
+            </if>
+            <if test="startTime != null">
+                AND pay_date&gt;=#{startTime}
+            </if>
+            <if test="endTime != null">
+                AND pay_date&lt;=#{endTime}
+            </if>
+        </where>
+        order by pay_date desc
+    </select>
+
+    <insert id="insertDetails" parameterType="ProcessPayOrderDetail">
+        insert into process_pay_order_detail
+         (
+          p_id,
+          employee,
+          pay_way,
+          pay_account,
+          pay_bank,
+          pay_amount,
+          remark,
+          create_by,
+          create_time,
+          pay_date
+          )values
+        <foreach collection="list" item="item" index="index" separator=",">
+        (
+            #{item.pid},
+            #{item.employee},
+            #{item.payWay},
+            #{item.payAccount},
+            #{item.payBank},
+            #{item.payAmount},
+            #{item.remark},
+            #{item.createBy},
+            #{item.createTime},
+            #{item.payDate}
+           )
+        </foreach>
+    </insert>
+
+    <delete id="deleteByDetails" parameterType="Long">
+        delete from process_pay_order_detail where id = #{id}
+    </delete>
+
+
+</mapper>
